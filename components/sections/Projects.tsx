@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ExternalLink, Github, ArrowUpRight } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image";
 
 const projects = [
   {
@@ -14,18 +15,32 @@ const projects = [
     githubLink: null,
     tech: ["Next.js", "TypeScript", "Stripe", "AI Integration"],
     featured: true,
+    image: "/assets/capture-ai.png",
     gradient: "from-blue-500/20 to-cyan-500/20",
   },
   {
-    title: "Recordo",
+    title: "Recordo Landing Page",
     description:
-      "Admin system with full-stack architecture using Node.js backend and Next.js frontend. Enterprise-grade solution for modern businesses.",
+      "Enterprise-grade landing page with a full-stack architecture. Optimized for high conversion and seamless user experience.",
     liveLink: null,
-    landingLink: "https://recordo.ai/",
+    landingLink: "https://recordo.ai/en/",
     githubLink: null,
-    tech: ["Next.js", "Node.js", "Full Stack"],
+    tech: ["Next.js", "Node.js", "Landing Page"],
     featured: true,
+    image: "/assets/recodo-landing-page.png",
     gradient: "from-purple-500/20 to-pink-500/20",
+  },
+  {
+    title: "Recordo Dashboard",
+    description:
+      "Professional administrative dashboard featuring real-time data management, secure authentication, and an intuitive user interface.",
+    liveLink: "https://admin-latest.recordo.ai/signin",
+    landingLink: null,
+    githubLink: null,
+    tech: ["Next.js", "Tailwind CSS", "Admin Dashboard"],
+    featured: true,
+    image: "/assets/recodo-dashboard.png",
+    gradient: "from-indigo-500/20 to-blue-500/20",
   },
   {
     title: "Recipe Generator",
@@ -35,6 +50,7 @@ const projects = [
     githubLink: null,
     tech: ["Next.js", "AI", "Vercel"],
     featured: false,
+    image: "/assets/recipe-gen.png",
     gradient: "from-green-500/20 to-emerald-500/20",
   },
   {
@@ -45,6 +61,7 @@ const projects = [
     githubLink: null,
     tech: ["E-commerce", "Next.js", "Scalable Backend"],
     featured: true,
+    image: "/assets/goldium-crafter.png",
     gradient: "from-orange-500/20 to-red-500/20",
   },
 ];
@@ -181,17 +198,25 @@ export default function Projects() {
                     )}
                   </div>
 
-                  {/* Preview Image Placeholder */}
-                  <div className="mt-8 h-64 rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-800 dark:from-neutral-100 dark:to-neutral-200 overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="w-16 h-16 rounded-full glass mx-auto mb-4 flex items-center justify-center">
-                          <ExternalLink className="w-8 h-8 text-neutral-500" />
+                  {/* Preview Image */}
+                  <div className="mt-8 h-64 rounded-xl bg-neutral-900 border border-neutral-200/50 dark:border-neutral-800/50 overflow-hidden relative group/image">
+                    {project.image ? (
+                      <Image
+                        src={project.image}
+                        alt={project.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover/image:scale-110"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="w-16 h-16 rounded-full glass mx-auto mb-4 flex items-center justify-center">
+                            <ExternalLink className="w-8 h-8 text-neutral-500" />
+                          </div>
+                          <p className="text-sm text-neutral-500">Project Preview</p>
                         </div>
-                        <p className="text-sm text-neutral-500">Project Preview</p>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
