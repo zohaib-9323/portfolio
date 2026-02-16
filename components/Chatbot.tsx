@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Bot, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { ChatMessage } from "@/lib/ai/providers/base";
 
 export default function Chatbot() {
@@ -11,7 +12,7 @@ export default function Chatbot() {
     {
       role: "assistant",
       content:
-        "Hello! I'm Zohaib's AI assistant. I can help you learn about his experience, projects, skills, and more. How can I help you today?",
+        "**Hi there! 👋 I'm Zohaib's AI Assistant.**\n\nI can help you explore his expert skills in `Next.js` and `MERN Stack`, walkthrough his latest **AI Projects**, or help you get in touch with him. \n\nWhat would you like to know more about?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -185,7 +186,7 @@ export default function Chatbot() {
                   </motion.div>
                   <div>
                     <h3 className="font-bold text-lg gradient-text-static">
-                      Zohaib's AI Assistant
+                      Zohaib&apos;s AI Assistant
                     </h3>
                     <p className="text-xs flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
                       <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -229,7 +230,7 @@ export default function Chatbot() {
                       </div>
                     )}
                     <motion.div
-                      className="max-w-[80%] rounded-2xl p-4"
+                      className="max-w-[88%] rounded-2xl p-4 sm:p-5 shadow-sm"
                       style={
                         message.role === "user"
                           ? {
@@ -243,11 +244,24 @@ export default function Chatbot() {
                             border: "1px solid var(--glass-border)",
                           }
                       }
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={{ scale: 1.01 }}
                     >
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
+                          ul: ({ children }) => <ul className="list-disc ml-4 mb-2 space-y-1">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal ml-4 mb-2 space-y-1">{children}</ol>,
+                          li: ({ children }) => <li className="text-sm">{children}</li>,
+                          strong: ({ children }) => <strong className="font-bold text-accent-light">{children}</strong>,
+                          code: ({ children }) => (
+                            <code className="px-1.5 py-0.5 rounded-md bg-white/10 font-mono text-xs">
+                              {children}
+                            </code>
+                          ),
+                        }}
+                      >
                         {message.content}
-                      </p>
+                      </ReactMarkdown>
                     </motion.div>
                     {message.role === "user" && (
                       <div className="w-9 h-9 rounded-xl glass flex items-center justify-center flex-shrink-0">
@@ -311,7 +325,7 @@ export default function Chatbot() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Ask me anything about Zohaib's experience..."
+                    placeholder="Ask me anything about Zohaib&apos;s experience..."
                     disabled={isLoading}
                     className="flex-1 px-4 py-3 rounded-xl glass focus-outline disabled:opacity-50 transition-all"
                     style={{

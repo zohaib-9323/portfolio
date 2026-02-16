@@ -1,25 +1,27 @@
 # Zohaib Asghar - Portfolio Website
 
-A modern, high-end, fully responsive developer portfolio website built with Next.js, TypeScript, and Tailwind CSS. Features an AI-powered chatbot, smooth animations, and a professional developer theme.
+A modern, high-end, fully responsive developer portfolio website built with Next.js, TypeScript, and Tailwind CSS. Features an AI-powered RAG chatbot, smooth animations, and a professional developer theme.
 
 ## 🚀 Features
 
-- **Modern Design**: Premium, clean, performance-focused UI with dark/light mode toggle
-- **Fully Responsive**: Mobile-first design that works on all devices
-- **AI Chatbot**: Modular AI assistant powered by Gemini API (easily switchable to Qdrant/RAG)
-- **Smooth Animations**: Framer Motion animations throughout
-- **Performance Optimized**: Fast loading, SEO optimized
-- **Production Ready**: Complete with deployment configuration
+- **Modern Design**: Premium, clean, performance-focused UI with dark/light mode toggle.
+- **Fully Responsive**: Mobile-first design that works on all devices.
+- **Advanced AI Chatbot**: Modular RAG (Retrieval-Augmented Generation) assistant.
+- **Vector Database**: Uses Qdrant for semantic search of portfolio data.
+- **Multi-Model Support**: Seamlessly switch between Gemini and OpenRouter (Nemotron, etc.).
+- **Markdown Rendering**: Chatbot responses feature clean markdown, lists, and code snippets.
+- **Smooth Animations**: Framer Motion animations throughout.
+- **Performance Optimized**: Fast loading, SEO optimized, and Next.js 14 performance.
 
 ## 📋 Sections
 
-- **Hero/About**: Animated hero section with rotating role text
-- **Skills**: Categorized skills display (Frontend, Backend, Database, DevOps)
-- **Experience**: Timeline view of professional experience
-- **Projects**: Showcase of featured projects with live links
-- **Performance Highlights**: Animated statistics
-- **Tech Philosophy**: Development principles and approach
-- **Contact**: Contact form and information
+- **Hero/About**: Animated hero section with rotating role text.
+- **Skills**: Categorized skills display (Frontend, Backend, Database, DevOps).
+- **Experience**: Timeline view of professional experience.
+- **Projects**: Showcase of featured projects with live links.
+- **Performance Highlights**: Animated statistics.
+- **Tech Philosophy**: Development principles and approach.
+- **Contact**: Contact form and information.
 
 ## 🛠️ Tech Stack
 
@@ -28,7 +30,10 @@ A modern, high-end, fully responsive developer portfolio website built with Next
 - **Styling**: Tailwind CSS
 - **Animations**: Framer Motion
 - **Icons**: Lucide React
-- **AI**: Google Gemini API (modular architecture)
+- **Vector DB**: Qdrant
+- **Embeddings**: Mistral AI (`mistral-embed`)
+- **LLMs**: Google Gemini API & OpenRouter (Nemotron)
+- **Database**: Supabase (for initial data source)
 
 ## 📦 Installation
 
@@ -48,19 +53,19 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` and add your Gemini API key:
-```
-GEMINI_API_KEY=your_gemini_api_key_here
+4. Configure your `.env` file (see [Environment Variables](#environment-variables) below).
+
+5. Sync your data to Qdrant (Optional):
+```bash
+node scripts/sync-to-qdrant.mjs
 ```
 
-Get your API key from: https://makersuite.google.com/app/apikey
-
-4. Run the development server:
+6. Run the development server:
 ```bash
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+7. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🏗️ Project Structure
 
@@ -70,107 +75,52 @@ portfolio/
 │   ├── api/
 │   │   └── chat/          # AI chatbot API route
 │   ├── globals.css        # Global styles
-│   ├── layout.tsx         # Root layout
 │   └── page.tsx          # Home page
 ├── components/
-│   ├── sections/          # Page sections
-│   │   ├── Hero.tsx
-│   │   ├── Skills.tsx
-│   │   ├── Experience.tsx
-│   │   ├── Projects.tsx
-│   │   ├── PerformanceHighlights.tsx
-│   │   ├── TechPhilosophy.tsx
-│   │   └── Contact.tsx
-│   ├── Chatbot.tsx        # AI chatbot component
-│   ├── Header.tsx         # Navigation header
-│   ├── Footer.tsx         # Footer component
-│   └── ThemeProvider.tsx  # Dark/light theme provider
+│   ├── sections/          # Page sections (Hero, Skills, Projects, etc.)
+│   ├── Chatbot.tsx        # AI chatbot UI with Markdown support
+│   └── ...
 ├── lib/
 │   ├── ai/
 │   │   └── providers/     # Modular AI provider system
 │   │       ├── base.ts    # AI provider interface
-│   │       ├── gemini.ts  # Gemini implementation
-│   │       └── index.ts   # Provider factory
-│   └── utils.ts           # Utility functions
-└── public/                # Static assets
+│   │       ├── gemini.ts  # Standard Gemini implementation
+│   │       ├── qdrant-mistral.ts # RAG Implementation (Retrieval)
+│   │       ├── openrouter.ts # OpenRouter Implementation
+│   │       └── index.ts   # Provider factory (Switching logic)
+│   └── supabase.ts        # Supabase client
+├── scripts/
+│   └── sync-to-qdrant.mjs # Data synchronization script
+└── ...
 ```
 
 ## 🤖 AI Chatbot Architecture
 
-The chatbot uses a modular architecture that allows easy switching between AI providers:
+The chatbot uses a highly modular factory pattern allowing for three different modes:
 
-### Current Implementation: Gemini API
-- Located in `lib/ai/providers/gemini.ts`
-- Uses Google's Gemini Pro model
-- Configured with system prompt about Zohaib's portfolio
+1. **Standard Gemini**: Simple LLM response without database context.
+2. **Qdrant RAG (Recommended)**: 
+   - **Step 1**: Converts user query to embedding via Mistral AI.
+   - **Step 2**: Retrieves relevant records from Qdrant Vector DB.
+   - **Step 3**: Passes context to the LLM (Gemini or OpenRouter).
+3. **OpenRouter**: Direct access to external models like Nemotron-3.
 
-### Switching to Qdrant + RAG
-
-To switch to a Qdrant-based RAG system:
-
-1. Create a new provider in `lib/ai/providers/qdrant-rag.ts`:
-```typescript
-import { AIProvider, ChatMessage } from "./base";
-
-export class QdrantRAGProvider implements AIProvider {
-  async chat(messages: ChatMessage[]): Promise<string> {
-    // Implement Qdrant vector search + LLM integration
-    // 1. Convert user message to embedding
-    // 2. Search Qdrant for relevant context
-    // 3. Pass context + message to LLM
-    // 4. Return response
-  }
-}
-```
-
-2. Update `lib/ai/providers/index.ts`:
-```typescript
-export function createAIProvider(): AIProvider {
-  // Switch from GeminiProvider to QdrantRAGProvider
-  return new QdrantRAGProvider();
-}
-```
-
-The frontend (`components/Chatbot.tsx`) and API route (`app/api/chat/route.ts`) remain unchanged!
+### Switching Modes
+Change the `AI_PROVIDER` and `RAG_GENERATOR` in your `.env` to toggle between systems without changing code.
 
 ## 🚀 Deployment
 
-### Deploy to Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Import your repository on [Vercel](https://vercel.com)
-3. Add environment variable `GEMINI_API_KEY` in Vercel dashboard
-4. Deploy!
-
 ### Environment Variables
 
-Make sure to set the following environment variables in your deployment platform:
+Make sure to set these in your deployment platform (Vercel/Netlify):
 
+- `AI_PROVIDER`: `gemini` | `qdrant` | `openrouter`
+- `RAG_GENERATOR`: `gemini` | `openrouter`
 - `GEMINI_API_KEY`: Your Google Gemini API key
-
-## 📝 Customization
-
-### Update Personal Information
-
-Edit the following files to update your information:
-
-- `components/sections/Hero.tsx`: Name, title, summary
-- `components/sections/Skills.tsx`: Skills and categories
-- `components/sections/Experience.tsx`: Work experience
-- `components/sections/Projects.tsx`: Projects and links
-- `components/Footer.tsx`: Contact information
-
-### Update AI Chatbot System Prompt
-
-Edit `lib/ai/providers/gemini.ts` → `getSystemPrompt()` method to customize the chatbot's knowledge and responses.
-
-## 🎨 Styling
-
-The project uses Tailwind CSS with custom utilities:
-
-- `glass`: Glassmorphism effect for dark mode
-- `glass-light`: Glassmorphism effect for light mode
-- Custom animations: `fade-in`, `slide-up`, `gradient`
+- `MISTRAL_API_KEY`: For generating embeddings
+- `QDRANT_URL` & `QDRANT_API_KEY`: For vector storage
+- `OPENROUTER_API_KEY`: Optional fallback/alternative LLM
+- `NEXT_PUBLIC_SUPABASE_URL` & `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Data source
 
 ## 📄 License
 
@@ -186,4 +136,4 @@ This project is private and proprietary.
 
 ---
 
-Built with ❤️ using Next.js, TypeScript, and Tailwind CSS
+Built with ❤️ by Zohaib Asghar

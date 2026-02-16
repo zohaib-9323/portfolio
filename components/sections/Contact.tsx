@@ -1,10 +1,22 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { Mail, Send, Github, Phone, MapPin, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Mail, Send, Github, Phone, MapPin, CheckCircle2, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { supabase } from "@/lib/supabase";
+
+interface PersonalData {
+  email: string;
+  phone: string;
+  social_links: {
+    github?: string;
+  };
+  metadata: {
+    location?: string;
+  };
+}
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -14,6 +26,28 @@ export default function Contact() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [data, setData] = useState<PersonalData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPersonalData() {
+      try {
+        const { data, error } = await supabase
+          .from("personal_data")
+          .select("*")
+          .single();
+
+        if (error) throw error;
+        if (data) setData(data);
+      } catch (error) {
+        console.error("Error fetching contact data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPersonalData();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,33 +63,41 @@ export default function Contact() {
     }, 1000);
   };
 
+  if (loading) {
+    return (
+      <section id="contact" className="py-32 md:py-40 bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-accent" />
+      </section>
+    );
+  }
+
   const contactItems = [
     {
       icon: Mail,
       label: "Email",
-      value: "mzohaib0677@gmail.com",
-      href: "mailto:mzohaib0677@gmail.com",
+      value: data?.email || "mzohaib0677@gmail.com",
+      href: `mailto:${data?.email || "mzohaib0677@gmail.com"}`,
       gradient: "from-blue-500 to-cyan-500",
     },
     {
       icon: Phone,
       label: "Phone",
-      value: "+92 3229911442",
-      href: "tel:+923229911442",
+      value: data?.phone || "+92 3229911442",
+      href: `tel:${data?.phone || "+923229911442"}`,
       gradient: "from-purple-500 to-pink-500",
     },
     {
       icon: MapPin,
       label: "Location",
-      value: "Lahore, Pakistan",
-      href: "https://maps.google.com/?q=Lahore,Pakistan",
+      value: data?.metadata?.location || "Lahore, Pakistan",
+      href: `https://maps.google.com/?q=${data?.metadata?.location || "Lahore,Pakistan"}`,
       gradient: "from-green-500 to-emerald-500",
     },
     {
       icon: Github,
       label: "GitHub",
-      value: "github.com/zohaib-9323",
-      href: "https://github.com/zohaib-9323",
+      value: data?.social_links?.github?.replace('https://', '') || "github.com/zohaib-9323",
+      href: data?.social_links?.github || "https://github.com/zohaib-9323",
       gradient: "from-orange-500 to-red-500",
     },
   ];
@@ -80,7 +122,7 @@ export default function Contact() {
             <span className="gradient-text-static">Get In Touch</span>
           </h2>
           <p className="text-body text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
-            Let's discuss your next project or just say hello!
+            Let&apos;s discuss your next project or just say hello!
           </p>
         </motion.div>
 
@@ -175,6 +217,7 @@ export default function Contact() {
                   const Icon = item.icon;
                   const Component = item.href ? motion.a : motion.div;
                   return (
+                    // @ts-ignore
                     <Component
                       key={item.label}
                       href={item.href}

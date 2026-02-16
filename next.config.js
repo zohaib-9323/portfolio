@@ -4,6 +4,12 @@ const nextConfig = {
   images: {
     domains: ['github.com'],
   },
+  experimental: {
+    serverComponentsExternalPackages: ["undici", "@qdrant/js-client-rest"],
+  },
 };
 
+
+
 module.exports = nextConfig;
+

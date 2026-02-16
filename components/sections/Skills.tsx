@@ -1,71 +1,116 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Code, Database, Cloud, Wrench } from "lucide-react";
-import { useState } from "react";
+import { Code, Database, Cloud, Wrench, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
-const skillCategories = [
-  {
-    id: "frontend",
+interface Skill {
+  name: string;
+  level: number;
+}
+
+interface Category {
+  id: string;
+  title: string;
+  icon: any;
+  skills: Skill[];
+  color: string;
+  description: string;
+}
+
+const categoryConfig: Record<string, { title: string; icon: any; color: string; description: string }> = {
+  frontend: {
     title: "Frontend",
     icon: Code,
-    skills: [
-      { name: "React.js", level: 90 },
-      { name: "Next.js", level: 85 },
-      { name: "TypeScript", level: 88 },
-      { name: "Tailwind CSS", level: 92 },
-      { name: "Bootstrap", level: 80 },
-      { name: "HTML5", level: 95 },
-      { name: "CSS3", level: 90 },
-    ],
     color: "from-blue-500 to-cyan-500",
     description: "Building modern, responsive user interfaces",
   },
-  {
-    id: "backend",
+  backend: {
     title: "Backend",
     icon: Cloud,
-    skills: [
-      { name: "Node.js", level: 88 },
-      { name: "Express.js", level: 85 },
-      { name: "NestJS", level: 80 },
-      { name: "RESTful APIs", level: 90 },
-      { name: "Secure Authentication", level: 87 },
-    ],
     color: "from-purple-500 to-pink-500",
     description: "Scalable server-side architecture and APIs",
   },
-  {
-    id: "database",
+  database: {
     title: "Database",
     icon: Database,
-    skills: [
-      { name: "MongoDB", level: 85 },
-      { name: "Mongoose", level: 88 },
-      { name: "Supabase", level: 80 },
-      { name: "Firebase", level: 82 },
-    ],
     color: "from-green-500 to-emerald-500",
     description: "Data modeling and database optimization",
   },
-  {
-    id: "devops",
+  devops: {
     title: "DevOps & Tools",
     icon: Wrench,
-    skills: [
-      { name: "Docker", level: 80 },
-      { name: "AWS (EC2, S3)", level: 75 },
-      { name: "GitHub Actions", level: 85 },
-      { name: "Vercel", level: 90 },
-      { name: "Stripe Integration", level: 88 },
-    ],
     color: "from-orange-500 to-red-500",
     description: "Deployment, CI/CD, and cloud infrastructure",
   },
-];
+};
 
 export default function Skills() {
-  const [activeTab, setActiveTab] = useState(skillCategories[0].id);
+  const [skillCategories, setSkillCategories] = useState<Category[]>([]);
+  const [activeTab, setActiveTab] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSkills() {
+      try {
+        const { data, error } = await supabase
+          .from("skills")
+          .select("*")
+          .order("proficiency", { ascending: false });
+
+        if (error) throw error;
+
+        if (data) {
+          const grouped = data.reduce((acc: Record<string, Skill[]>, s: any) => {
+            const catId = s.category.toLowerCase();
+            if (!acc[catId]) acc[catId] = [];
+            acc[catId].push({
+              name: s.name,
+              level: s.proficiency || 0,
+            });
+            return acc;
+          }, {});
+
+          const categories: Category[] = Object.keys(grouped).map((catId) => {
+            const config = categoryConfig[catId] || {
+              title: catId.charAt(0).toUpperCase() + catId.slice(1),
+              icon: Code,
+              color: "from-gray-500 to-slate-500",
+              description: "Technical skills and proficiencies",
+            };
+            return {
+              id: catId,
+              ...config,
+              skills: grouped[catId],
+            };
+          }).sort((a, b) => {
+            const order = ["frontend", "backend", "database", "devops"];
+            return order.indexOf(a.id) - order.indexOf(b.id);
+          });
+
+          setSkillCategories(categories);
+          if (categories.length > 0) {
+            setActiveTab(categories[0].id);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching skills:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchSkills();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="skills" className="py-32 md:py-40 bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-accent" />
+      </section>
+    );
+  }
 
   const activeCategory = skillCategories.find((cat) => cat.id === activeTab) || skillCategories[0];
 
@@ -129,63 +174,65 @@ export default function Skills() {
 
         {/* Active Category Content */}
         <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="max-w-4xl mx-auto"
-          >
-            <div className="glass-strong rounded-2xl p-8 md:p-12">
-              {/* Category Header */}
-              <div className="flex items-center gap-4 mb-8">
-                <div
-                  className={`w-16 h-16 rounded-xl bg-gradient-to-r ${activeCategory.color} flex items-center justify-center shadow-glow`}
-                >
-                  <activeCategory.icon className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-heading-md font-bold mb-1 gradient-text-static">
-                    {activeCategory.title}
-                  </h3>
-                  <p className="text-neutral-600 dark:text-neutral-400">
-                    {activeCategory.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Skills List with Progress */}
-              <div className="space-y-6">
-                {activeCategory.skills.map((skill, index) => (
-                  <motion.div
-                    key={skill.name}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="space-y-2"
+          {activeCategory && (
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-4xl mx-auto"
+            >
+              <div className="glass-strong rounded-2xl p-8 md:p-12">
+                {/* Category Header */}
+                <div className="flex items-center gap-4 mb-8">
+                  <div
+                    className={`w-16 h-16 rounded-xl bg-gradient-to-r ${activeCategory.color} flex items-center justify-center shadow-glow`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-neutral-800 dark:text-neutral-200">
-                        {skill.name}
-                      </span>
-                      <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                        {skill.level}%
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${skill.level}%` }}
-                        transition={{ duration: 1, delay: index * 0.1, ease: "easeOut" }}
-                        className={`h-full bg-gradient-to-r ${activeCategory.color} rounded-full`}
-                      />
-                    </div>
-                  </motion.div>
-                ))}
+                    <activeCategory.icon className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-heading-md font-bold mb-1 gradient-text-static">
+                      {activeCategory.title}
+                    </h3>
+                    <p className="text-neutral-600 dark:text-neutral-400">
+                      {activeCategory.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Skills List with Progress */}
+                <div className="space-y-6">
+                  {activeCategory.skills.map((skill, index) => (
+                    <motion.div
+                      key={skill.name}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-neutral-800 dark:text-neutral-200">
+                          {skill.name}
+                        </span>
+                        <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                          {skill.level}%
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${skill.level}%` }}
+                          transition={{ duration: 1, delay: index * 0.1, ease: "easeOut" }}
+                          className={`h-full bg-gradient-to-r ${activeCategory.color} rounded-full`}
+                        />
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
     </section>
