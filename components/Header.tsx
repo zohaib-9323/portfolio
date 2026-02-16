@@ -5,6 +5,7 @@ import { motion, useScroll, useSpring } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 const navItems = [
   { name: "About", href: "#about" },
@@ -18,12 +19,31 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const [displayName, setDisplayName] = useState("Zohaib Asghar");
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
     restDelta: 0.001,
   });
+
+  useEffect(() => {
+    async function fetchDisplayName() {
+      try {
+        const { data, error } = await supabase
+          .from("personal_data")
+          .select("display_name")
+          .single();
+
+        if (error) throw error;
+        if (data) setDisplayName(data.display_name);
+      } catch (error) {
+        console.error("Error fetching display name:", error);
+      }
+    }
+
+    fetchDisplayName();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -97,7 +117,7 @@ export default function Header() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Zohaib Asghar
+              {displayName}
             </motion.a>
 
             {/* Desktop Navigation */}

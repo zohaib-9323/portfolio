@@ -1,25 +1,84 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Briefcase, Calendar, TrendingUp, Zap, Users, Rocket } from "lucide-react";
+import { Briefcase, Calendar, TrendingUp, Zap, Users, Rocket, Loader2, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
-const experiences = [
-  {
-    title: "Full Stack Developer",
-    company: "DevExcel",
-    period: "Mar 2023 – 2024",
-    achievements: [
-      { text: "Improved system performance by", metric: "25%", icon: Zap },
-      { text: "Increased API efficiency by", metric: "30%", icon: TrendingUp },
-      { text: "Boosted user satisfaction by", metric: "40%", icon: Users },
-      { text: "Reduced deployment time by", metric: "50%", icon: Rocket },
-      { text: "Integrated Stripe payment systems", metric: null, icon: null },
-      { text: "Implemented AI document processing APIs", metric: null, icon: null },
-    ],
-  },
-];
+interface Achievement {
+  text: string;
+  metric: string | null;
+  icon: any;
+}
+
+interface Experience {
+  title: string;
+  company: string;
+  period: string;
+  achievements: Achievement[];
+}
+
+const defaultIcons = [Zap, TrendingUp, Users, Rocket, CheckCircle2];
 
 export default function Experience() {
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchExperience() {
+      try {
+        const { data, error } = await supabase
+          .from("work_history")
+          .select("*")
+          .order("start_date", { ascending: false });
+
+        if (error) throw error;
+
+        if (data) {
+          const mapped = data.map((exp: any) => {
+            const start = new Date(exp.start_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            const end = exp.currently_working ? 'Present' : (exp.end_date ? new Date(exp.end_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '2024');
+
+            const achievements = (exp.achievements || []).map((ach: string, idx: number) => {
+              // Try to find a metric (percentage)
+              const metricMatch = ach.match(/(\d+%)/);
+              const metric = metricMatch ? metricMatch[1] : null;
+              const text = metric ? ach.replace(metric, '').trim() : ach;
+
+              return {
+                text,
+                metric,
+                icon: defaultIcons[idx % defaultIcons.length]
+              };
+            });
+
+            return {
+              title: exp.role,
+              company: exp.company_name,
+              period: `${start} – ${end}`,
+              achievements
+            };
+          });
+          setExperiences(mapped);
+        }
+      } catch (error) {
+        console.error("Error fetching experience:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchExperience();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="experience" className="py-32 md:py-40 bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-accent" />
+      </section>
+    );
+  }
+
   return (
     <section
       id="experience"

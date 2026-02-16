@@ -1,10 +1,28 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Github, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowRight, Github, Mail, MapPin, Phone, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
-const roles = [
+interface PersonalData {
+  display_name: string;
+  role: string;
+  bio: string;
+  email: string;
+  phone: string;
+  social_links: {
+    github?: string;
+    twitter?: string;
+    linkedin?: string;
+  };
+  metadata: {
+    location?: string;
+    availability?: string;
+  };
+}
+
+const defaultRoles = [
   "Building Scalable AI-Driven Web Applications",
   "Full Stack MERN Developer",
   "Performance-Optimized Solutions",
@@ -12,14 +30,44 @@ const roles = [
 ];
 
 export default function Hero() {
-  const [currentRole, setCurrentRole] = useState(0);
+  const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
+  const [data, setData] = useState<PersonalData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPersonalData() {
+      try {
+        const { data, error } = await supabase
+          .from("personal_data")
+          .select("*")
+          .single();
+
+        if (error) throw error;
+        if (data) setData(data);
+      } catch (error) {
+        console.error("Error fetching personal data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPersonalData();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentRole((prev) => (prev + 1) % roles.length);
+      setCurrentRoleIndex((prev) => (prev + 1) % defaultRoles.length);
     }, 3500);
     return () => clearInterval(interval);
   }, []);
+
+  if (loading) {
+    return (
+      <section id="about" className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+        <Loader2 className="w-10 h-10 animate-spin text-accent" />
+      </section>
+    );
+  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -78,13 +126,13 @@ export default function Hero() {
           {/* Subtitle */}
           <motion.div variants={itemVariants}>
             <h2 className="text-heading-lg font-semibold mb-6 text-neutral-600 dark:text-neutral-400">
-              Full Stack MERN Developer
+              {data?.role || "Full Stack MERN Developer"}
             </h2>
           </motion.div>
 
           {/* Rotating Role */}
           <motion.div
-            key={currentRole}
+            key={currentRoleIndex}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -92,18 +140,14 @@ export default function Hero() {
             className="h-20 md:h-24 mb-8 flex items-center justify-center"
           >
             <p className="text-xl md:text-2xl font-medium gradient-text-static">
-              {roles[currentRole]}
+              {defaultRoles[currentRoleIndex]}
             </p>
           </motion.div>
 
           {/* Description */}
           <motion.div variants={itemVariants} className="mb-12">
             <p className="text-body text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto leading-relaxed">
-              Results-driven Full Stack Developer with 1.5+ years of experience
-              building scalable web applications using MERN Stack, Next.js, and
-              TypeScript. Strong expertise in performance optimization, secure
-              backend integrations, RESTful API development, database
-              architecture, and cloud deployments.
+              {data?.bio || "Results-driven Full Stack Developer building scalable applications."}
             </p>
           </motion.div>
 
@@ -123,7 +167,7 @@ export default function Hero() {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </motion.a>
             <motion.a
-              href="https://github.com/zohaib-9323"
+              href={data?.social_links?.github || "https://github.com/zohaib-9323"}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-secondary flex items-center gap-2"
@@ -140,32 +184,38 @@ export default function Hero() {
             variants={itemVariants}
             className="flex flex-wrap justify-center gap-6 md:gap-8 text-caption text-neutral-500 dark:text-neutral-500"
           >
-            <motion.a
-              href="https://maps.google.com/?q=Lahore,Pakistan"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 hover:text-accent transition-colors group"
-              whileHover={{ scale: 1.05 }}
-            >
-              <MapPin className="w-4 h-4" />
-              <span>Lahore, Pakistan</span>
-            </motion.a>
-            <motion.a
-              href="mailto:mzohaib0677@gmail.com"
-              className="flex items-center gap-2 hover:text-accent transition-colors group"
-              whileHover={{ scale: 1.05 }}
-            >
-              <Mail className="w-4 h-4" />
-              <span>mzohaib0677@gmail.com</span>
-            </motion.a>
-            <motion.a
-              href="tel:+923229911442"
-              className="flex items-center gap-2 hover:text-accent transition-colors group"
-              whileHover={{ scale: 1.05 }}
-            >
-              <Phone className="w-4 h-4" />
-              <span>+92 3229911442</span>
-            </motion.a>
+            {data?.metadata?.location && (
+              <motion.a
+                href={`https://maps.google.com/?q=${data.metadata.location}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:text-accent transition-colors group"
+                whileHover={{ scale: 1.05 }}
+              >
+                <MapPin className="w-4 h-4" />
+                <span>{data.metadata.location}</span>
+              </motion.a>
+            )}
+            {data?.email && (
+              <motion.a
+                href={`mailto:${data.email}`}
+                className="flex items-center gap-2 hover:text-accent transition-colors group"
+                whileHover={{ scale: 1.05 }}
+              >
+                <Mail className="w-4 h-4" />
+                <span>{data.email}</span>
+              </motion.a>
+            )}
+            {data?.phone && (
+              <motion.a
+                href={`tel:${data.phone}`}
+                className="flex items-center gap-2 hover:text-accent transition-colors group"
+                whileHover={{ scale: 1.05 }}
+              >
+                <Phone className="w-4 h-4" />
+                <span>{data.phone}</span>
+              </motion.a>
+            )}
           </motion.div>
         </motion.div>
       </div>

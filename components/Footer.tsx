@@ -1,10 +1,46 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Github, Mail, Phone, MapPin, ArrowUp } from "lucide-react";
+import { Github, Mail, Phone, MapPin, ArrowUp, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+
+interface PersonalData {
+  display_name: string;
+  email: string;
+  phone: string;
+  social_links: {
+    github?: string;
+  };
+  metadata: {
+    location?: string;
+  };
+}
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [data, setData] = useState<PersonalData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPersonalData() {
+      try {
+        const { data, error } = await supabase
+          .from("personal_data")
+          .select("*")
+          .single();
+
+        if (error) throw error;
+        if (data) setData(data);
+      } catch (error) {
+        console.error("Error fetching footer data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPersonalData();
+  }, []);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -18,6 +54,8 @@ export default function Footer() {
     { name: "Contact", href: "#contact" },
   ];
 
+  if (loading) return null;
+
   return (
     <footer className="relative border-t border-neutral-200/50 dark:border-neutral-800/50 bg-neutral-50 dark:bg-neutral-950">
       <div className="section-container py-12 md:py-16">
@@ -25,7 +63,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <h3 className="text-xl font-bold mb-4 gradient-text-static">
-              Zohaib Asghar
+              {data?.display_name || "Zohaib Asghar"}
             </h3>
             <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-xs">
               Full Stack MERN Developer building scalable web applications with modern technologies.
@@ -59,25 +97,25 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="mailto:mzohaib0677@gmail.com"
+                  href={`mailto:${data?.email || "mzohaib0677@gmail.com"}`}
                   className="text-sm text-neutral-600 dark:text-neutral-400 hover:text-accent transition-colors flex items-center gap-2"
                 >
                   <Mail className="w-4 h-4" />
-                  mzohaib0677@gmail.com
+                  {data?.email || "mzohaib0677@gmail.com"}
                 </a>
               </li>
               <li>
                 <a
-                  href="tel:+923229911442"
+                  href={`tel:${data?.phone || "+923229911442"}`}
                   className="text-sm text-neutral-600 dark:text-neutral-400 hover:text-accent transition-colors flex items-center gap-2"
                 >
                   <Phone className="w-4 h-4" />
-                  +92 3229911442
+                  {data?.phone || "+92 3229911442"}
                 </a>
               </li>
               <li className="text-sm text-neutral-600 dark:text-neutral-400 flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
-                Lahore, Pakistan
+                {data?.metadata?.location || "Lahore, Pakistan"}
               </li>
             </ul>
           </div>
@@ -86,11 +124,11 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-neutral-200/50 dark:border-neutral-800/50 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-neutral-500 dark:text-neutral-500">
-            © {currentYear} Zohaib Asghar. All rights reserved.
+            © {currentYear} {data?.display_name || "Zohaib Asghar"}. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <motion.a
-              href="https://github.com/zohaib-9323"
+              href={data?.social_links?.github || "https://github.com/zohaib-9323"}
               target="_blank"
               rel="noopener noreferrer"
               className="text-neutral-600 dark:text-neutral-400 hover:text-accent transition-colors"

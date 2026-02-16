@@ -1,85 +1,92 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ExternalLink, Github, ArrowUpRight } from "lucide-react";
-import { useState } from "react";
+import { ExternalLink, Github, ArrowUpRight, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { supabase } from "@/lib/supabase";
 
-const projects = [
-  {
-    title: "Capture AI Web Application",
-    description:
-      "A high-performance AI-based portal with Stripe integration and scalable cloud architecture. Built for seamless user management and AI processing.",
-    liveLink: "https://app.cptr.ai/",
-    landingLink: null,
-    githubLink: null,
-    tech: ["Next.js", "TypeScript", "Stripe", "AI Integration"],
-    featured: true,
-    image: "/assets/capture-ai.png",
-    gradient: "from-blue-500/20 to-indigo-500/20",
-  },
-  {
-    title: "Capture AI Landing Page",
-    description:
-      "A conversion-optimized landing page for the Capture AI platform, featuring high-fidelity animations and a high-performance design.",
-    liveLink: null,
-    landingLink: "https://cptr.ai/",
-    githubLink: null,
-    tech: ["Next.js", "Framer Motion", "Tailwind CSS"],
-    featured: true,
-    image: "/assets/capture-ai-landing-page.png",
-    gradient: "from-cyan-500/20 to-blue-500/20",
-  },
-  {
-    title: "Recordo Landing Page",
-    description:
-      "Enterprise-grade landing page with a full-stack architecture. Optimized for high conversion and seamless user experience.",
-    liveLink: null,
-    landingLink: "https://recordo.ai/en/",
-    githubLink: null,
-    tech: ["Next.js", "Node.js", "Landing Page"],
-    featured: true,
-    image: "/assets/recodo-landing-page.png",
-    gradient: "from-purple-500/20 to-pink-500/20",
-  },
-  {
-    title: "Recordo Dashboard",
-    description:
-      "Professional administrative dashboard featuring real-time data management, secure authentication, and an intuitive user interface.",
-    liveLink: "https://admin-latest.recordo.ai/signin",
-    landingLink: null,
-    githubLink: null,
-    tech: ["Next.js", "Tailwind CSS", "Admin Dashboard"],
-    featured: true,
-    image: "/assets/recodo-dashboard.png",
-    gradient: "from-indigo-500/20 to-blue-500/20",
-  },
-  {
-    title: "Recipe Generator",
-    description: "AI-powered recipe generation platform with intelligent suggestions and personalized meal planning capabilities.",
-    liveLink: "https://recipe-ges.vercel.app/",
-    landingLink: null,
-    githubLink: null,
-    tech: ["Next.js", "AI", "Vercel"],
-    featured: false,
-    image: "/assets/recipe-gen.png",
-    gradient: "from-green-500/20 to-emerald-500/20",
-  },
-  {
-    title: "Goldiam Crafters",
-    description: "E-commerce solution with optimized UI and scalable backend. Delivering seamless shopping experiences with modern architecture.",
-    liveLink: "https://goldiamcrafters.com/",
-    landingLink: null,
-    githubLink: null,
-    tech: ["E-commerce", "Next.js", "Scalable Backend"],
-    featured: true,
-    image: "/assets/goldium-crafter.png",
-    gradient: "from-orange-500/20 to-red-500/20",
-  },
+interface Project {
+  title: string;
+  description: string;
+  liveLink: string | null;
+  landingLink: string | null;
+  githubLink: string | null;
+  tech: string[];
+  featured: boolean;
+  image: string;
+  gradient: string;
+}
+
+const gradients = [
+  "from-blue-500/20 to-indigo-500/20",
+  "from-cyan-500/20 to-blue-500/20",
+  "from-purple-500/20 to-pink-500/20",
+  "from-indigo-500/20 to-blue-500/20",
+  "from-green-500/20 to-emerald-500/20",
+  "from-orange-500/20 to-red-500/20",
 ];
 
 export default function Projects() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        const { data, error } = await supabase
+          .from("projects")
+          .select("*")
+          .order("is_featured", { ascending: false })
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (data) {
+          const mappedProjects = data.map((p: any, index: number) => {
+            // Determine if the project is a landing page or app based on title or URL
+            const isLandingPage = p.title.toLowerCase().includes('landing page');
+
+            // Extract tech stack from different possible formats in tech_stack_meta
+            let tech = [];
+            if (p.tech_stack_meta) {
+              tech = p.tech_stack_meta.stack || p.tech_stack_meta.technologies || [];
+            } else if (p.tech_stack) {
+              tech = p.tech_stack;
+            }
+
+            return {
+              title: p.title,
+              description: p.short_description || p.description,
+              liveLink: !isLandingPage ? p.project_link : null,
+              landingLink: isLandingPage ? p.project_link : null,
+              githubLink: p.repo_link,
+              tech: tech,
+              featured: p.is_featured,
+              image: p.image_url || null,
+              gradient: gradients[index % gradients.length],
+            };
+          });
+          setProjects(mappedProjects);
+        }
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProjects();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="projects" className="py-32 md:py-40 bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-accent" />
+      </section>
+    );
+  }
 
   return (
     <section
@@ -142,7 +149,7 @@ export default function Projects() {
                       <h3 className="text-heading-md font-bold mb-3 gradient-text-static">
                         {project.title}
                       </h3>
-                      <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                      <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-3">
                         {project.description}
                       </p>
                     </div>
