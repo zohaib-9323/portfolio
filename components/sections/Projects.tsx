@@ -7,16 +7,28 @@ import Image from "next/image";
 
 const projects = [
   {
-    title: "Capture AI Portal",
+    title: "Capture AI Web Application",
     description:
-      "AI-based platform with Stripe integration and scalable architecture. Built with modern Next.js and TypeScript for optimal performance.",
+      "A high-performance AI-based portal with Stripe integration and scalable cloud architecture. Built for seamless user management and AI processing.",
     liveLink: "https://app.cptr.ai/",
-    landingLink: "https://cptr.ai/",
+    landingLink: null,
     githubLink: null,
     tech: ["Next.js", "TypeScript", "Stripe", "AI Integration"],
     featured: true,
     image: "/assets/capture-ai.png",
-    gradient: "from-blue-500/20 to-cyan-500/20",
+    gradient: "from-blue-500/20 to-indigo-500/20",
+  },
+  {
+    title: "Capture AI Landing Page",
+    description:
+      "A conversion-optimized landing page for the Capture AI platform, featuring high-fidelity animations and a high-performance design.",
+    liveLink: null,
+    landingLink: "https://cptr.ai/",
+    githubLink: null,
+    tech: ["Next.js", "Framer Motion", "Tailwind CSS"],
+    featured: true,
+    image: "/assets/capture-ai-landing-page.png",
+    gradient: "from-cyan-500/20 to-blue-500/20",
   },
   {
     title: "Recordo Landing Page",
