@@ -194,7 +194,7 @@ export default function Certificates() {
     for (const row of remoteItems) {
       const cert = rowToCert(row);
       if (!cert) continue;
-      const existing = [...merged.values()].find(
+      const existing = Array.from(merged.values()).find(
         (c) => c.title.toLowerCase() === cert.title.toLowerCase()
       );
       if (existing) {
@@ -210,7 +210,7 @@ export default function Certificates() {
       }
     }
 
-    return [...merged.values()].sort((a, b) => a.sortOrder - b.sortOrder);
+    return Array.from(merged.values()).sort((a, b) => a.sortOrder - b.sortOrder);
   }, [remoteItems]);
 
   if (loading) {
