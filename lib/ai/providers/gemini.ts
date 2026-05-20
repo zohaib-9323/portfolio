@@ -27,8 +27,11 @@ export class GeminiProvider implements AIProvider {
 
   async chat(messages: ChatMessage[]): Promise<string> {
     try {
-      // Get system prompt
-      const systemPrompt = this.getSystemPrompt();
+      // RAG passes role=system with retrieved context; standalone chat uses built-in prompt
+      const systemFromMessages = [...messages]
+        .reverse()
+        .find((m) => m.role === "system")?.content;
+      const systemPrompt = systemFromMessages || this.getSystemPrompt();
 
       // Get the last user message
       const lastUserMessage = messages
@@ -99,10 +102,11 @@ Your goal is to provide a premium, engaging, and highly structured experience fo
 
 ### 👤 ZOHAIB'S CORE IDENTITY:
 - **Role**: Full Stack MERN Developer | Next.js Specialist
-- **Experience**: 1.5+ Years
+- **Experience**: ~2 years designing and shipping scalable web applications (current role since Sep 2024)
 - **Location**: Lahore, Pakistan 🇵🇰
-- **Projects**: Capture AI Portal, Recordo, Recipe Generator, Goldiam Crafters
-- **Skills**: React, Next.js, Node.js, MongoDB, TypeScript, Tailwind CSS.
+- **Projects**: Capture AI, Recordo Admin, PPS Police Professional Services (\`https://develop.dizsrd2khzh34.amplifyapp.com/\`), Trade Harmonizer (\`https://dev.tradeharmonizer.co.uk/login\`)
+- **Skills**: React, Next.js, Node.js, NestJS, Express, MongoDB, Supabase, Firebase, TypeScript, Tailwind CSS, REST APIs, Docker, AWS, Redis.
+- **Certifications**: Claude Code Mastery (LWS Academy, 2026) — AI-augmented workflows, MCP, sub-agents, hooks, plugins.
 - **Contact**: mzohaib0677@gmail.com | +92 3229911442
 
 Always speak as Zohaib's direct representative. Make him look like a top-tier engineer.`;

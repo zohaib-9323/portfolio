@@ -12,7 +12,7 @@ export default function Chatbot() {
     {
       role: "assistant",
       content:
-        "**Hi there! 👋 I'm Zohaib's AI Assistant.**\n\nI can help you explore his expert skills in `Next.js` and `MERN Stack`, walkthrough his latest **AI Projects**, or help you get in touch with him. \n\nWhat would you like to know more about?",
+        "**Hi there! 👋 I'm Zohaib's AI Assistant.**\n\nAsk about his **experience**, **MERN / Next.js stack**, **certifications** (e.g. Claude Code Mastery), **featured projects**, or how to reach him.\n\nWhat would you like to know?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -89,9 +89,8 @@ export default function Chatbot() {
         whileHover={{ scale: 1.1, rotate: 5 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-8 right-8 z-50 w-16 h-16 rounded-full flex items-center justify-center text-white group"
+        className="surface-amber fixed bottom-8 right-8 z-50 flex h-16 w-16 items-center justify-center rounded-full group"
         style={{
-          background: "var(--gradient-primary)",
           boxShadow: "var(--shadow-glow-strong)",
         }}
         aria-label="Toggle chatbot"
@@ -125,7 +124,7 @@ export default function Chatbot() {
           <motion.div
             className="absolute inset-0 rounded-full"
             style={{
-              background: "var(--gradient-primary)",
+              background: "var(--amber)",
             }}
             animate={{
               scale: [1, 1.2, 1],
@@ -174,15 +173,14 @@ export default function Chatbot() {
               >
                 <div className="flex items-center gap-3">
                   <motion.div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center"
+                    className="surface-amber flex h-12 w-12 items-center justify-center rounded-xl"
                     style={{
-                      background: "var(--gradient-primary)",
                       boxShadow: "var(--shadow-glow)",
                     }}
                     animate={{ rotate: [0, 10, -10, 0] }}
                     transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
                   >
-                    <Bot className="w-6 h-6 text-white" />
+                    <Bot className="h-6 w-6" />
                   </motion.div>
                   <div>
                     <h3 className="font-bold text-lg gradient-text-static">
@@ -220,13 +218,12 @@ export default function Chatbot() {
                   >
                     {message.role === "assistant" && (
                       <div
-                        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                        className="surface-amber flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                         style={{
-                          background: "var(--gradient-primary)",
                           boxShadow: "var(--shadow-glow)",
                         }}
                       >
-                        <Bot className="w-5 h-5 text-white" />
+                        <Bot className="h-5 w-5" />
                       </div>
                     )}
                     <motion.div
@@ -234,8 +231,8 @@ export default function Chatbot() {
                       style={
                         message.role === "user"
                           ? {
-                            background: "var(--gradient-primary)",
-                            color: "white",
+                            background: "var(--amber)",
+                            color: "var(--black)",
                             boxShadow: "var(--shadow-glow)",
                           }
                           : {
@@ -277,13 +274,12 @@ export default function Chatbot() {
                     className="flex gap-3 justify-start"
                   >
                     <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center"
+                      className="surface-amber flex h-9 w-9 items-center justify-center rounded-xl"
                       style={{
-                        background: "var(--gradient-primary)",
                         boxShadow: "var(--shadow-glow)",
                       }}
                     >
-                      <Bot className="w-5 h-5 text-white" />
+                      <Bot className="h-5 w-5" />
                     </div>
                     <div className="glass rounded-2xl p-4">
                       <div className="flex gap-1.5">
@@ -291,7 +287,7 @@ export default function Chatbot() {
                           <motion.div
                             key={i}
                             className="w-2 h-2 rounded-full"
-                            style={{ background: "var(--accent-primary)" }}
+                            style={{ background: "var(--amber)", color: "var(--black)" }}
                             animate={{
                               y: [0, -8, 0],
                               opacity: [0.5, 1, 0.5],
@@ -335,15 +331,14 @@ export default function Chatbot() {
                   <motion.button
                     onClick={handleSend}
                     disabled={isLoading || !input.trim()}
-                    className="px-5 py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="surface-amber rounded-xl px-5 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-50"
                     style={{
-                      background: "var(--gradient-primary)",
                       boxShadow: "var(--shadow-glow)",
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Send className="w-5 h-5 text-white" />
+                    <Send className="h-5 w-5" />
                   </motion.button>
                 </div>
               </div>

@@ -7,11 +7,13 @@ export class QdrantMistralRAGProvider implements AIProvider {
     private qdrantClient: QdrantClient;
     private generator: AIProvider;
     private mistralApiKey: string;
-    private collectionName: string = "portfolio_vectors";
+    private collectionName: string;
 
     constructor() {
         const qdrantUrl = process.env.QDRANT_URL;
         const qdrantApiKey = process.env.QDRANT_API_KEY;
+        this.collectionName =
+            process.env.QDRANT_COLLECTION?.trim() || "portfolio_vectors";
         const geminiApiKey = process.env.GEMINI_API_KEY || "";
         this.mistralApiKey = process.env.MISTRAL_API_KEY || "";
 
@@ -114,10 +116,11 @@ ${context}
 
 ### 👤 ZOHAIB'S CORE IDENTITY:
 - **Role**: Full Stack MERN Developer | Next.js Specialist
-- **Experience**: 1.5+ Years of building scalable web apps.
+- **Experience**: ~2 years of building scalable web apps (MERN, Next.js, NestJS backends).
 - **Location**: Lahore, Pakistan 🇵🇰
 - **Email**: mzohaib0677@gmail.com
-- **Core Tech**: React, Next.js, Node.js, MongoDB, TypeScript, Tailwind CSS.
+- **Core Tech**: React, Next.js, Node.js, NestJS, MongoDB, Supabase, Firebase, TypeScript, REST APIs, Docker, AWS, Redis, Tailwind CSS.
+- **Certifications**: Claude Code Mastery (LWS Academy, 2026).
 
 Always speak as Zohaib's direct representative. Make him look like the top-tier engineer he is.`;
 

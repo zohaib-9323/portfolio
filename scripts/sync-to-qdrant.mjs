@@ -11,7 +11,7 @@ const QDRANT_URL = process.env.QDRANT_URL;
 const QDRANT_API_KEY = process.env.QDRANT_API_KEY;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 
-const COLLECTION_NAME = 'portfolio_vectors';
+const COLLECTION_NAME = (process.env.QDRANT_COLLECTION || 'portfolio_vectors').trim();
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const qdrant = new QdrantClient({
@@ -94,9 +94,10 @@ async function main() {
         'personal_data',
         'skills',
         'projects',
-        'experience',
+        'work_history',
+        'certifications',
         'education',
-        'project_contributions'
+        'project_contributions',
     ];
 
     for (const table of tables) {

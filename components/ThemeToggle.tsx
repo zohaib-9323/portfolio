@@ -67,7 +67,7 @@ export default function ThemeToggle() {
                 >
                     <Moon
                         className="w-5 h-5"
-                        style={{ color: "var(--accent-primary)" }}
+                        style={{ color: "var(--amber)" }}
                         strokeWidth={2.5}
                     />
                 </motion.div>

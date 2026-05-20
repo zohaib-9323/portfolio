@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAIProvider } from "@/lib/ai/providers";
 import { ChatMessage } from "@/lib/ai/providers/base";
+import {
+  chatEnvHumanHint,
+  getMissingChatEnvVars,
+} from "@/lib/ai/chat-env";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,13 +23,13 @@ export async function POST(request: NextRequest) {
       content: msg.content || "",
     }));
 
-    // Check if GEMINI_API_KEY is set
-    if (!process.env.GEMINI_API_KEY) {
-      console.error("GEMINI_API_KEY is not set");
+    const missingEnv = getMissingChatEnvVars();
+    if (missingEnv.length > 0) {
+      console.error("[api/chat] Missing env:", missingEnv.join(", "));
       return NextResponse.json(
-        { 
-          error: "AI service is not configured. Please set GEMINI_API_KEY environment variable.",
-          details: "The chatbot requires a Gemini API key to function."
+        {
+          error: "AI service is not configured for the selected provider.",
+          details: chatEnvHumanHint(missingEnv),
         },
         { status: 500 }
       );

@@ -22,9 +22,17 @@ const config: Config = {
           secondary: "var(--text-secondary)",
           muted: "var(--text-muted)",
           disabled: "var(--text-disabled)",
+          "on-accent": "var(--text-on-accent)",
+        },
+        amber: {
+          DEFAULT: "var(--amber)",
+        },
+        black: {
+          DEFAULT: "var(--black)",
         },
         accent: {
-          DEFAULT: "var(--accent-primary)",
+          DEFAULT: "var(--amber)",
+          secondary: "var(--accent-secondary)",
           hover: "var(--accent-hover)",
           light: "var(--accent-light)",
           glow: "var(--accent-glow)",
@@ -42,7 +50,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
-          "var(--font-inter)",
+          "var(--font-sans)",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",
