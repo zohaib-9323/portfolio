@@ -129,8 +129,8 @@ Make sure to set these in your deployment platform (Vercel/Netlify):
 Free-tier Supabase projects pause after inactivity; Qdrant Cloud clusters may need a manual wake-up. The app can email you when checks fail (reuses contact-form SMTP, 6h cooldown per service).
 
 1. Set `CRON_SECRET` (random string) and keep existing `SMTP_*` vars.
-2. **Vercel**: `vercel.json` runs `/api/service-health` every 6 hours (Vercel sends `Authorization: Bearer CRON_SECRET` automatically).
-3. **Elsewhere**: schedule `npm run services:check` or `GET https://your-site.com/api/service-health` with header `Authorization: Bearer <CRON_SECRET>`.
+2. **Vercel (Hobby)**: `vercel.json` runs `/api/service-health` once daily at 09:00 UTC (Hobby only allows one cron per day). Vercel sends `Authorization: Bearer CRON_SECRET` automatically.
+3. **More frequent checks**: use [cron-job.org](https://cron-job.org) or `npm run services:check` with the same URL and `Authorization: Bearer <CRON_SECRET>` header (e.g. every 6 hours).
 
 Optional: `SERVICE_ALERT_EMAIL`, `SUPABASE_DASHBOARD_URL`, `QDRANT_DASHBOARD_URL`. Set `SERVICE_ALERT_ENABLED=false` to disable.
 

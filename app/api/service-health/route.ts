@@ -22,7 +22,7 @@ function isAuthorized(request: NextRequest): boolean {
 
 /**
  * GET /api/service-health — periodic health check + email when Supabase/Qdrant are down.
- * Protect with CRON_SECRET. Schedule via Vercel Cron or cron-job.org (every 6h recommended).
+ * Protect with CRON_SECRET. Vercel Hobby: once daily (see vercel.json). For more frequent checks, use cron-job.org.
  */
 export async function GET(request: NextRequest) {
   if (!isAuthorized(request)) {
