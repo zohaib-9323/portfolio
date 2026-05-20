@@ -62,12 +62,19 @@ export default function Chatbot() {
         };
         setMessages((prev) => [...prev, assistantMessage]);
       } else {
-        throw new Error(data.error || "Failed to get response");
+        throw new Error(
+          data.error || data.details || "Failed to get response"
+        );
       }
     } catch (error: any) {
+      const hint =
+        typeof error?.message === "string" && error.message.length < 280
+          ? error.message
+          : null;
       const errorMessage: ChatMessage = {
         role: "assistant",
         content:
+          hint ||
           "Sorry, I'm having trouble connecting right now. Please try again later or contact Zohaib directly at mzohaib0677@gmail.com",
       };
       setMessages((prev) => [...prev, errorMessage]);

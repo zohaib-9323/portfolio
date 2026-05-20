@@ -10,6 +10,7 @@ import {
   shouldCheckQdrant,
 } from "@/lib/service-health";
 import { notifyServiceIssueFromError } from "@/lib/service-alerts";
+import { toUserFacingAiError } from "@/lib/ai/gemini-utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -64,10 +65,12 @@ export async function POST(request: NextRequest) {
       notifyServiceIssueFromError("qdrant", error);
     }
 
+    const rawMessage = error?.message || "Failed to process chat request";
     return NextResponse.json(
-      { 
-        error: error.message || "Failed to process chat request",
-        details: process.env.NODE_ENV === "development" ? error?.toString() : undefined
+      {
+        error: toUserFacingAiError(rawMessage),
+        details:
+          process.env.NODE_ENV === "development" ? error?.toString() : undefined,
       },
       { status: 500 }
     );

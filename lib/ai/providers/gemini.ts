@@ -1,4 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+  getGeminiModelCandidates,
+  isModelNotFoundError,
+  isTransientGeminiError,
+  sleep,
+} from "../gemini-utils";
 import { AIProvider, ChatMessage, ChatResult } from "./base";
 import { getActiveProviderName } from "../rag-utils";
 
@@ -60,16 +66,7 @@ export class GeminiProvider implements AIProvider {
         ? `${systemPrompt}\n\nPrevious conversation:\n${conversationContext}\n\nUser: ${lastUserMessage}\n\nAssistant:`
         : `${systemPrompt}\n\nUser: ${lastUserMessage}\n\nAssistant:`;
 
-      const model = this.genAI.getGenerativeModel({
-        model: "gemini-2.5-flash",
-        generationConfig: {
-          temperature: useRagSystem ? 0.4 : 0.7,
-          maxOutputTokens: 8192,
-        },
-      });
-
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const text = await this.generateWithFallback(prompt, useRagSystem);
 
       if (!text) {
         throw new Error("Empty response from AI");
@@ -103,6 +100,51 @@ export class GeminiProvider implements AIProvider {
 
       throw new Error(`AI service error: ${errorMessage}`);
     }
+  }
+
+  private async generateWithFallback(
+    prompt: string,
+    useRagSystem: boolean
+  ): Promise<string> {
+    const models = getGeminiModelCandidates();
+    let lastError = "Unknown error";
+
+    for (const modelName of models) {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const model = this.genAI.getGenerativeModel({
+            model: modelName,
+            generationConfig: {
+              temperature: useRagSystem ? 0.4 : 0.7,
+              maxOutputTokens: 8192,
+            },
+          });
+
+          const result = await model.generateContent(prompt);
+          const text = result.response.text();
+          if (text) return text;
+          lastError = "Empty response from AI";
+        } catch (error: unknown) {
+          const err = error as { message?: string };
+          lastError = err?.message || String(error);
+          const transient = isTransientGeminiError(lastError);
+
+          if (transient && attempt < 2) {
+            await sleep(400 * (attempt + 1));
+            continue;
+          }
+          if (transient || isModelNotFoundError(lastError)) {
+            console.warn(
+              `[Gemini] ${modelName} skipped (${lastError.slice(0, 100)}), trying next model…`
+            );
+            break;
+          }
+          throw error;
+        }
+      }
+    }
+
+    throw new Error(lastError);
   }
 
   private getSystemPrompt(): string {

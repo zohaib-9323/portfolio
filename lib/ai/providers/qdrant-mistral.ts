@@ -179,7 +179,8 @@ Always speak as Zohaib's direct representative.`;
       };
     } catch (error) {
       console.error("RAG Error:", error);
-      throw new Error("Failed to get response from AI");
+      if (error instanceof Error) throw error;
+      throw new Error(String(error));
     }
   }
 }
