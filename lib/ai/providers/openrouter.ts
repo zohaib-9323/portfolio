@@ -1,4 +1,5 @@
-import { AIProvider, ChatMessage } from "./base";
+import { AIProvider, ChatMessage, ChatResult } from "./base";
+import { getActiveProviderName } from "../rag-utils";
 
 export class OpenRouterProvider implements AIProvider {
     private apiKey: string;
@@ -11,7 +12,8 @@ export class OpenRouterProvider implements AIProvider {
         }
     }
 
-    async chat(messages: ChatMessage[]): Promise<string> {
+    async chat(messages: ChatMessage[]): Promise<ChatResult> {
+        const started = Date.now();
         try {
             // Using fetch directly as per OpenRouter's best practice for environments without full SDK support
             // or to maintain consistency with the other providers here.
@@ -41,7 +43,21 @@ export class OpenRouterProvider implements AIProvider {
             }
 
             const data = await response.json();
-            return data.choices[0]?.message?.content || "I apologize, but I couldn't generate a response.";
+            const text =
+                data.choices[0]?.message?.content ||
+                "I apologize, but I couldn't generate a response.";
+            const hasRagSystem = messages.some((m) => m.role === "system");
+
+            return {
+                response: text,
+                meta: {
+                    provider: getActiveProviderName(),
+                    source: hasRagSystem ? "rag_llm" : "openrouter",
+                    cached: false,
+                    generator: "openrouter",
+                    latencyMs: Date.now() - started,
+                },
+            };
         } catch (error) {
             console.error("OpenRouter Error:", error);
             throw new Error("Failed to get response from OpenRouter");

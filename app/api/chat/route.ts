@@ -5,6 +5,11 @@ import {
   chatEnvHumanHint,
   getMissingChatEnvVars,
 } from "@/lib/ai/chat-env";
+import {
+  isLikelyQdrantFailure,
+  shouldCheckQdrant,
+} from "@/lib/service-health";
+import { notifyServiceIssueFromError } from "@/lib/service-alerts";
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,20 +40,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create AI provider (modular - can switch providers here)
+    const providerName = (process.env.AI_PROVIDER || "gemini").trim().toLowerCase();
     const aiProvider = createAIProvider();
 
-    // Get response from AI
-    const response = await aiProvider.chat(chatMessages);
+    if (process.env.NODE_ENV === "development") {
+      console.info(`[api/chat] provider=${providerName}`);
+    }
 
-    return NextResponse.json({ response });
+    const result = await aiProvider.chat(chatMessages);
+
+    return NextResponse.json({
+      response: result.response,
+      meta: result.meta,
+    });
   } catch (error: any) {
     console.error("Chat API Error:", {
       message: error?.message,
       error: error?.toString(),
       stack: error?.stack,
     });
-    
+
+    if (shouldCheckQdrant() && isLikelyQdrantFailure(error)) {
+      notifyServiceIssueFromError("qdrant", error);
+    }
+
     return NextResponse.json(
       { 
         error: error.message || "Failed to process chat request",

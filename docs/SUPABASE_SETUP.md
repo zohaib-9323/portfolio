@@ -59,7 +59,10 @@ CREATE POLICY "Public read certifications"
   ON certifications FOR SELECT TO anon USING (true);
 ```
 
-To create the `certifications` table and populate profile, skills, experience, and certificate data from the latest resume, run the bundled script **[`scripts/seed-zohaib-resume-2026.sql`](../scripts/seed-zohaib-resume-2026.sql)** (edit paths, JSON vs `text[]` for `achievements`, and the `DELETE`/`truncate` sections if you need a non-destructive merge).
+**Certifications table missing (404 on `/rest/v1/certifications`)?**  
+Run **[`scripts/create-certifications-table.sql`](../scripts/create-certifications-table.sql)** in [SQL Editor](https://supabase.com/dashboard/project/olmodhsmoxzhzaagvyok/sql/new) — creates the table, RLS policy, and seeds Claude Code Mastery.
+
+For a full profile/skills/experience refresh, run **[`scripts/seed-zohaib-resume-2026.sql`](../scripts/seed-zohaib-resume-2026.sql)** (review destructive `truncate`/`delete` sections first).
 
 If a policy already exists with another name, drop or alter it instead of duplicating.
 

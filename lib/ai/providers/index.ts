@@ -8,7 +8,7 @@ import { OpenRouterProvider } from "./openrouter";
  * Supports: 'gemini' (default), 'qdrant' (RAG), 'openrouter'
  */
 export function createAIProvider(): AIProvider {
-  const providerType = (process.env.AI_PROVIDER || 'gemini').toLowerCase();
+  const providerType = (process.env.AI_PROVIDER || "gemini").trim().toLowerCase();
 
   switch (providerType) {
     case 'openrouter':

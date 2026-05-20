@@ -98,14 +98,16 @@ export function Typewriter({
               {item.char}
             </span>
           ))}
-          {showCursor && lineIdx === lines.length - 1 && !done && (
-            <span className="typewriter-cursor ml-0.5 inline-block w-[3px] align-middle" />
+          {showCursor && lineIdx === lines.length - 1 && (
+            <span
+              className={cn(
+                "typewriter-cursor ml-0.5 inline-block w-[3px] align-middle",
+                done && "opacity-60"
+              )}
+            />
           )}
         </span>
       ))}
-      {showCursor && done && (
-        <span className="typewriter-cursor ml-0.5 inline-block w-[3px] align-middle opacity-60" />
-      )}
     </span>
   );
 }

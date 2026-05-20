@@ -28,6 +28,9 @@ yarn-error.log*
 .env*.local
 .env
 
+# service health alert cooldown (scripts/check-services.mjs)
+scripts/.service-alert-state.json
+
 # vercel
 .vercel
 

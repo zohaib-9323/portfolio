@@ -1,39 +1,29 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { AIProvider, ChatMessage } from "./base";
+import { AIProvider, ChatMessage, ChatResult } from "./base";
+import { getActiveProviderName } from "../rag-utils";
 
 /**
  * Gemini AI Provider Implementation
- * This can be replaced with Qdrant+RAG or other providers
- * by implementing the AIProvider interface
  */
 export class GeminiProvider implements AIProvider {
   private genAI: GoogleGenerativeAI;
-  private model: any;
 
   constructor(apiKey: string) {
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY is required");
     }
     this.genAI = new GoogleGenerativeAI(apiKey);
-    // Use gemini-2.5-flash with proper generation config
-    this.model = this.genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 8192,
-      },
-    });
   }
 
-  async chat(messages: ChatMessage[]): Promise<string> {
+  async chat(messages: ChatMessage[]): Promise<ChatResult> {
+    const started = Date.now();
     try {
-      // RAG passes role=system with retrieved context; standalone chat uses built-in prompt
       const systemFromMessages = [...messages]
         .reverse()
         .find((m) => m.role === "system")?.content;
       const systemPrompt = systemFromMessages || this.getSystemPrompt();
+      const useRagSystem = Boolean(systemFromMessages);
 
-      // Get the last user message
       const lastUserMessage = messages
         .filter((msg) => msg.role === "user")
         .pop()?.content || "";
@@ -42,48 +32,73 @@ export class GeminiProvider implements AIProvider {
         throw new Error("No user message found");
       }
 
-      // Build conversation context
-      const conversationContext = messages
-        .slice(-6) // Last 6 messages for context
-        .map((msg) => {
-          if (msg.role === "user") {
-            return `User: ${msg.content}`;
-          } else if (msg.role === "assistant") {
-            return `Assistant: ${msg.content}`;
-          }
-          return "";
-        })
-        .filter(Boolean)
+      const historyMessages = messages.filter(
+        (m) => m.role === "user" || m.role === "assistant"
+      );
+
+      const conversationMessages = useRagSystem
+        ? historyMessages.filter(
+            (m) =>
+              !(
+                m.role === "assistant" &&
+                m.content.includes("Zohaib's AI Assistant") &&
+                m.content.includes("Ask about his")
+              )
+          )
+        : historyMessages;
+
+      const priorTurns = conversationMessages.slice(0, -1);
+      const conversationContext = priorTurns
+        .map((msg) =>
+          msg.role === "user"
+            ? `User: ${msg.content}`
+            : `Assistant: ${msg.content}`
+        )
         .join("\n");
 
-      // Create prompt with system instruction and conversation
       const prompt = conversationContext
         ? `${systemPrompt}\n\nPrevious conversation:\n${conversationContext}\n\nUser: ${lastUserMessage}\n\nAssistant:`
         : `${systemPrompt}\n\nUser: ${lastUserMessage}\n\nAssistant:`;
 
-      // Generate response
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const model = this.genAI.getGenerativeModel({
+        model: "gemini-2.5-flash",
+        generationConfig: {
+          temperature: useRagSystem ? 0.4 : 0.7,
+          maxOutputTokens: 8192,
+        },
+      });
+
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
 
       if (!text) {
         throw new Error("Empty response from AI");
       }
 
-      return text;
-    } catch (error: any) {
+      return {
+        response: text,
+        meta: {
+          provider: getActiveProviderName(),
+          source: useRagSystem ? "rag_llm" : "gemini",
+          cached: false,
+          generator: "gemini",
+          latencyMs: Date.now() - started,
+        },
+      };
+    } catch (error: unknown) {
+      const err = error as { message?: string; toString?: () => string; stack?: string };
       console.error("Gemini API Error Details:", {
-        message: error?.message,
-        error: error?.toString(),
-        stack: error?.stack,
+        message: err?.message,
+        error: err?.toString?.(),
+        stack: err?.stack,
       });
 
-      // Return more detailed error message for debugging
-      const errorMessage = error?.message || error?.toString() || "Unknown error";
+      const errorMessage = err?.message || err?.toString?.() || "Unknown error";
 
-      // Check for specific API errors
       if (errorMessage.includes("API_KEY")) {
-        throw new Error("Invalid or missing Gemini API key. Please check your GEMINI_API_KEY environment variable.");
+        throw new Error(
+          "Invalid or missing Gemini API key. Please check your GEMINI_API_KEY environment variable."
+        );
       }
 
       throw new Error(`AI service error: ${errorMessage}`);

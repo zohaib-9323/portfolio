@@ -17,6 +17,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const qdrant = new QdrantClient({
     url: QDRANT_URL,
     apiKey: QDRANT_API_KEY,
+    checkCompatibility: false,
 });
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));

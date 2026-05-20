@@ -13,7 +13,7 @@ import Chatbot from "@/components/Chatbot";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-bg-primary">
+    <main className="site-canvas relative min-h-screen">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden>
         <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-accent/6 blur-[120px]" />
         <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-accent/4 blur-[100px]" />

@@ -101,8 +101,9 @@ The chatbot uses a highly modular factory pattern allowing for three different m
 1. **Standard Gemini**: Simple LLM response without database context.
 2. **Qdrant RAG (Recommended)**: 
    - **Step 1**: Converts user query to embedding via Mistral AI.
-   - **Step 2**: Retrieves relevant records from Qdrant Vector DB.
-   - **Step 3**: Passes context to the LLM (Gemini or OpenRouter).
+   - **Step 2**: Checks **semantic cache** in Qdrant (`portfolio_semantic_cache`) for similar past questions.
+   - **Step 3**: Retrieves relevant records from `portfolio_vectors` (Supabase sync).
+   - **Step 4**: Passes context to the LLM (Gemini or OpenRouter); stores answer in semantic cache.
 3. **OpenRouter**: Direct access to external models like Nemotron-3.
 
 ### Switching Modes
@@ -121,6 +122,17 @@ Make sure to set these in your deployment platform (Vercel/Netlify):
 - `QDRANT_URL` & `QDRANT_API_KEY`: For vector storage
 - `OPENROUTER_API_KEY`: Optional fallback/alternative LLM
 - `NEXT_PUBLIC_SUPABASE_URL` & `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Data source
+- `SMTP_*` + `CRON_SECRET`: For email alerts when Supabase/Qdrant pause (free tier)
+
+### Supabase / Qdrant pause alerts
+
+Free-tier Supabase projects pause after inactivity; Qdrant Cloud clusters may need a manual wake-up. The app can email you when checks fail (reuses contact-form SMTP, 6h cooldown per service).
+
+1. Set `CRON_SECRET` (random string) and keep existing `SMTP_*` vars.
+2. **Vercel**: `vercel.json` runs `/api/service-health` every 6 hours (Vercel sends `Authorization: Bearer CRON_SECRET` automatically).
+3. **Elsewhere**: schedule `npm run services:check` or `GET https://your-site.com/api/service-health` with header `Authorization: Bearer <CRON_SECRET>`.
+
+Optional: `SERVICE_ALERT_EMAIL`, `SUPABASE_DASHBOARD_URL`, `QDRANT_DASHBOARD_URL`. Set `SERVICE_ALERT_ENABLED=false` to disable.
 
 ## 📄 License
 

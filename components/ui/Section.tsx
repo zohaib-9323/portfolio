@@ -10,13 +10,19 @@ interface SectionShellProps {
   children: React.ReactNode;
   className?: string;
   variant?: SectionVariant;
-  /** Show subtle dot grid + mesh orbs */
+  /** Dot grid baked into section background */
   ambient?: boolean;
 }
 
+const variantAmbient: Record<SectionVariant, string> = {
+  default: "section-ambient-default",
+  elevated: "section-ambient-elevated",
+  muted: "section-ambient-default",
+};
+
 const variantBg: Record<SectionVariant, string> = {
   default: "bg-bg-primary",
-  elevated: "bg-bg-secondary/80",
+  elevated: "bg-bg-secondary",
   muted: "bg-bg-primary",
 };
 
@@ -32,24 +38,10 @@ export function SectionShell({
       id={id}
       className={cn(
         "relative isolate scroll-mt-24 overflow-hidden py-28 md:py-36",
-        variantBg[variant],
+        ambient ? variantAmbient[variant] : variantBg[variant],
         className
       )}
     >
-      {ambient && (
-        <>
-          <div className="pointer-events-none absolute inset-0 -z-10 section-mesh" aria-hidden />
-          <div
-            className="pointer-events-none absolute inset-0 -z-10 opacity-[0.4] dark:opacity-[0.25]"
-            style={{
-              backgroundImage:
-                "radial-gradient(var(--border-muted) 1px, transparent 1px)",
-              backgroundSize: "32px 32px",
-            }}
-            aria-hidden
-          />
-        </>
-      )}
       <div className="section-container relative z-10">{children}</div>
     </section>
   );

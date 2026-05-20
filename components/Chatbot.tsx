@@ -53,6 +53,9 @@ export default function Chatbot() {
       const data = await response.json();
 
       if (response.ok) {
+        if (data.meta) {
+          console.info("[chat] response meta:", data.meta);
+        }
         const assistantMessage: ChatMessage = {
           role: "assistant",
           content: data.response,
@@ -89,10 +92,7 @@ export default function Chatbot() {
         whileHover={{ scale: 1.1, rotate: 5 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="surface-amber fixed bottom-8 right-8 z-50 flex h-16 w-16 items-center justify-center rounded-full group"
-        style={{
-          boxShadow: "var(--shadow-glow-strong)",
-        }}
+        className="chatbot-surface fixed bottom-8 right-8 z-50 flex h-16 w-16 items-center justify-center rounded-full group"
         aria-label="Toggle chatbot"
       >
         <AnimatePresence mode="wait">
@@ -122,13 +122,10 @@ export default function Chatbot() {
         {/* Pulse Effect */}
         {!isOpen && (
           <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: "var(--amber)",
-            }}
+            className="absolute inset-0 rounded-full border-2 border-amber/50"
             animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.5, 0, 0.5],
+              scale: [1, 1.12, 1],
+              opacity: [0.6, 0, 0.6],
             }}
             transition={{
               duration: 2,
@@ -173,10 +170,7 @@ export default function Chatbot() {
               >
                 <div className="flex items-center gap-3">
                   <motion.div
-                    className="surface-amber flex h-12 w-12 items-center justify-center rounded-xl"
-                    style={{
-                      boxShadow: "var(--shadow-glow)",
-                    }}
+                    className="chatbot-surface flex h-12 w-12 items-center justify-center rounded-xl"
                     animate={{ rotate: [0, 10, -10, 0] }}
                     transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
                   >
@@ -217,12 +211,7 @@ export default function Chatbot() {
                       }`}
                   >
                     {message.role === "assistant" && (
-                      <div
-                        className="surface-amber flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                        style={{
-                          boxShadow: "var(--shadow-glow)",
-                        }}
-                      >
+                      <div className="chatbot-surface flex h-9 w-9 shrink-0 items-center justify-center rounded-xl">
                         <Bot className="h-5 w-5" />
                       </div>
                     )}
@@ -233,7 +222,8 @@ export default function Chatbot() {
                           ? {
                             background: "var(--amber)",
                             color: "var(--black)",
-                            boxShadow: "var(--shadow-glow)",
+                            border: "2px solid var(--border-strong)",
+                            boxShadow: "var(--shadow-brutal)",
                           }
                           : {
                             background: "var(--glass-bg)",
@@ -273,12 +263,7 @@ export default function Chatbot() {
                     animate={{ opacity: 1 }}
                     className="flex gap-3 justify-start"
                   >
-                    <div
-                      className="surface-amber flex h-9 w-9 items-center justify-center rounded-xl"
-                      style={{
-                        boxShadow: "var(--shadow-glow)",
-                      }}
-                    >
+                    <div className="chatbot-surface flex h-9 w-9 items-center justify-center rounded-xl">
                       <Bot className="h-5 w-5" />
                     </div>
                     <div className="glass rounded-2xl p-4">
@@ -331,10 +316,7 @@ export default function Chatbot() {
                   <motion.button
                     onClick={handleSend}
                     disabled={isLoading || !input.trim()}
-                    className="surface-amber rounded-xl px-5 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-50"
-                    style={{
-                      boxShadow: "var(--shadow-glow)",
-                    }}
+                    className="chatbot-surface rounded-xl px-5 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-50"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >

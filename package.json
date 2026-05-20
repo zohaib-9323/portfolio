@@ -7,7 +7,9 @@
     "dev:3001": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:certifications": "node -e \"console.log('Open scripts/create-certifications-table.sql in Supabase SQL Editor:\\nhttps://supabase.com/dashboard/project/olmodhsmoxzhzaagvyok/sql/new')\"",
+    "services:check": "node scripts/check-services.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.2.0",

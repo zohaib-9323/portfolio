@@ -86,7 +86,7 @@ export default function Hero() {
     () => [
       { text: "Hi, I'm ", className: "text-text-primary" },
       { text: firstName, className: "gradient-text-static" },
-      { text: "\n— I craft ", className: "text-text-primary" },
+      { text: "\nI craft ", className: "text-text-primary" },
       { text: "digital products", className: "text-highlight" },
       { text: " that scale.", className: "text-text-primary" },
     ],
@@ -109,9 +109,9 @@ export default function Hero() {
   return (
     <section
       id="about"
-      className="relative flex min-h-screen items-center overflow-hidden pt-24 pb-16 md:pt-28"
+      className="relative flex min-h-screen items-center overflow-hidden bg-bg-primary pt-24 pb-16 md:pt-28"
     >
-      <div className="pointer-events-none absolute inset-0 grid-background opacity-30" />
+      <div className="pointer-events-none absolute inset-0 grid-background" aria-hidden />
       <div className="pointer-events-none absolute inset-0 hero-spotlight" />
 
       {/* Animated glow ring behind headline */}
@@ -334,7 +334,7 @@ export default function Hero() {
         </div>
       </div>
 
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: headlineDone ? 1 : 0 }}
         transition={{ delay: 0.2 }}
@@ -355,7 +355,7 @@ export default function Hero() {
             />
           </div>
         </motion.div>
-      </motion.div>
+      </motion.div> */}
     </section>
   );
 }

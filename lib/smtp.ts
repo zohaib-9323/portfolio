@@ -23,6 +23,50 @@ export function isSmtpConfigured(): boolean {
   return getSmtpConfig() !== null;
 }
 
+export type MailPayload = {
+  subject: string;
+  text: string;
+  html: string;
+};
+
+function getAlertRecipient(config: NonNullable<ReturnType<typeof getSmtpConfig>>): string {
+  return (
+    process.env.SERVICE_ALERT_EMAIL?.trim() ||
+    process.env.CONTACT_TO?.trim() ||
+    process.env.SMTP_TO?.trim() ||
+    config.user
+  );
+}
+
+export async function sendMailMessage(payload: MailPayload): Promise<void> {
+  const config = getSmtpConfig();
+  if (!config) {
+    throw new Error("SMTP is not configured on the server.");
+  }
+
+  const to = getAlertRecipient(config);
+  const from =
+    process.env.SMTP_FROM || `"Portfolio" <${config.user}>`;
+
+  const transporter = nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: config.port === 465,
+    auth: {
+      user: config.user,
+      pass: config.pass,
+    },
+  });
+
+  await transporter.sendMail({
+    from,
+    to,
+    subject: payload.subject,
+    text: payload.text,
+    html: payload.html,
+  });
+}
+
 export async function sendContactEmail(payload: ContactPayload): Promise<void> {
   const config = getSmtpConfig();
   if (!config) {

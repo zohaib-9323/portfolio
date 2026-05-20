@@ -49,7 +49,7 @@ export default function Footer() {
   const name = data?.display_name || "Zohaib Asghar";
 
   return (
-    <footer className="relative border-t border-border-muted bg-bg-secondary/50">
+    <footer className="relative  bg-bg-secondary/50 backdrop-blur-sm">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent"
         aria-hidden
