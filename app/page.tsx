@@ -9,7 +9,7 @@ import PerformanceHighlights from "@/components/sections/PerformanceHighlights";
 import TechPhilosophy from "@/components/sections/TechPhilosophy";
 import Contact from "@/components/sections/Contact";
 import Footer from "@/components/Footer";
-import Chatbot from "@/components/Chatbot";
+import ChatbotLoader from "@/components/ChatbotLoader";
 
 export default function Home() {
   return (
@@ -29,7 +29,7 @@ export default function Home() {
       <TechPhilosophy />
       <Contact />
       <Footer />
-      <Chatbot />
+      <ChatbotLoader />
     </main>
   );
 }

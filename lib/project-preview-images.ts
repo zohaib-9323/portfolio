@@ -4,14 +4,14 @@
  */
 
 export const PROJECT_PREVIEW_FILES = {
-  captureAiDashboard: "/assets/projects/capture-ai-dashboard.png",
-  captureAiLanding: "/assets/projects/capture-ai-landing-page.png",
-  recordoDashboard: "/assets/projects/recordo-dashboard.png",
-  recordoLanding: "/assets/projects/recordo-landing-page.png",
-  recipeGenerator: "/assets/projects/recipe-generator.png",
-  goldiumCrafter: "/assets/projects/goldium-crafter.png",
-  pps: "/assets/projects/PPS.png",
-  tradeHarmonizer: "/assets/projects/trade-harmonizer.png",
+  captureAiDashboard: "/assets/projects/capture-ai-dashboard.jpg",
+  captureAiLanding: "/assets/projects/capture-ai-landing-page.jpg",
+  recordoDashboard: "/assets/projects/recordo-dashboard.jpg",
+  recordoLanding: "/assets/projects/recordo-landing-page.jpg",
+  recipeGenerator: "/assets/projects/recipe-generator.jpg",
+  goldiumCrafter: "/assets/projects/goldium-crafter.jpg",
+  pps: "/assets/projects/PPS.jpg",
+  tradeHarmonizer: "/assets/projects/trade-harmonizer.jpg",
 } as const;
 
 const IMAGE_EXT = /\.(png|jpe?g|webp|gif|svg|avif|bmp|ico)(\?|#|$)/i;
@@ -54,9 +54,10 @@ export function remapLegacyProjectImagePath(path: string | null | undefined): st
   if (LEGACY_IMAGE_PATH_MAP[withSlash]) return LEGACY_IMAGE_PATH_MAP[withSlash];
   if (LEGACY_IMAGE_PATH_MAP[trimmed]) return LEGACY_IMAGE_PATH_MAP[trimmed];
 
-  // Already under /assets/projects/
+  // Already under /assets/projects/ — bundled previews are now optimized JPEGs,
+  // so rewrite any stale .png reference to the .jpg that actually ships.
   if (withSlash.startsWith("/assets/projects/") && IMAGE_EXT.test(withSlash)) {
-    return withSlash;
+    return withSlash.replace(/\.png(\?|#|$)/i, ".jpg$1");
   }
 
   return null;

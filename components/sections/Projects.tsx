@@ -319,7 +319,7 @@ export default function Projects() {
               <div
                 className={`
                   card-interactive relative h-full overflow-hidden rounded-3xl
-                  bg-card-bg/50 p-7 backdrop-blur-xl
+                  bg-card-bg/60 p-7 backdrop-blur-md
                   ${hoveredIndex === index ? "!border-accent/35 shadow-glow" : ""}
                 `}
               >
