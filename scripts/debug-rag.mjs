@@ -1,7 +1,5 @@
-import dotenv from "dotenv";
 import { QdrantClient } from "@qdrant/js-client-rest";
-
-dotenv.config();
+import { getEmbedding, VECTOR_COLLECTION, CACHE_COLLECTION } from "./embeddings.mjs";
 
 const client = new QdrantClient({
   url: process.env.QDRANT_URL,
@@ -11,19 +9,7 @@ const client = new QdrantClient({
 
 const query = process.argv[2] || "What is Capture AI project?";
 
-async function embed(text) {
-  const res = await fetch("https://api.mistral.ai/v1/embeddings", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.MISTRAL_API_KEY}`,
-    },
-    body: JSON.stringify({ model: "mistral-embed", input: text }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(JSON.stringify(data));
-  return data.data[0].embedding;
-}
+const embed = (text) => getEmbedding(text, "query");
 
 async function main() {
   console.log("AI_PROVIDER:", process.env.AI_PROVIDER);
@@ -37,8 +23,8 @@ async function main() {
   console.log("Query:", query);
   console.log("Embedding dims:", vec.length);
 
-  const rag = await client.search("portfolio_vectors", { vector: vec, limit: 3 });
-  console.log("\n--- RAG (portfolio_vectors) ---");
+  const rag = await client.search(VECTOR_COLLECTION, { vector: vec, limit: 3 });
+  console.log(`\n--- RAG (${VECTOR_COLLECTION}) ---`);
   console.log("Hits:", rag.length);
   for (const [i, r] of rag.entries()) {
     const text = r.payload?._text || "";
@@ -47,7 +33,7 @@ async function main() {
   }
 
   try {
-    const cache = await client.search("portfolio_semantic_cache", {
+    const cache = await client.search(CACHE_COLLECTION, {
       vector: vec,
       limit: 3,
     });

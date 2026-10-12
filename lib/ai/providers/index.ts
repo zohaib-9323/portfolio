@@ -2,6 +2,7 @@ import { AIProvider } from "./base";
 import { GeminiProvider } from "./gemini";
 import { QdrantMistralRAGProvider } from "./qdrant-mistral";
 import { OpenRouterProvider } from "./openrouter";
+import { getEmbeddingApiKeyName } from "../embeddings";
 
 /**
  * Factory function to create AI provider
@@ -19,14 +20,14 @@ export function createAIProvider(): AIProvider {
       break;
 
     case 'qdrant':
-      if (process.env.QDRANT_URL && process.env.QDRANT_API_KEY && process.env.MISTRAL_API_KEY) {
+      if (process.env.QDRANT_URL && process.env.QDRANT_API_KEY && process.env[getEmbeddingApiKeyName()]) {
         try {
           return new QdrantMistralRAGProvider();
         } catch (error) {
           console.error("Failed to initialize QdrantMistralRAGProvider, falling back to Gemini:", error);
         }
       } else {
-        console.warn("Qdrant/Mistral variables missing, falling back to Gemini");
+        console.warn("Qdrant or embedding API key missing, falling back to Gemini");
       }
       break;
 

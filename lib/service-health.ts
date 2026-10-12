@@ -215,9 +215,9 @@ export async function checkQdrantHealth(): Promise<ServiceHealthResult> {
 
   try {
     const { getQdrantClient } = await import("@/lib/ai/qdrant-client");
+    const { getVectorCollectionName } = await import("@/lib/ai/embeddings");
     const client = getQdrantClient();
-    const collection =
-      process.env.QDRANT_COLLECTION?.trim() || "portfolio_vectors";
+    const collection = getVectorCollectionName();
     const collections = await client.getCollections();
     const exists = collections.collections.some((c) => c.name === collection);
 

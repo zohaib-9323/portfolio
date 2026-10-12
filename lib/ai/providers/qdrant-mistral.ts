@@ -2,7 +2,7 @@ import { GeminiProvider } from "./gemini";
 import { OpenRouterProvider } from "./openrouter";
 import { AIProvider, ChatMessage, ChatResult } from "./base";
 import { getActiveProviderName } from "../rag-utils";
-import { getMistralEmbedding } from "../mistral-embed";
+import { getEmbedding, getVectorCollectionName } from "../embeddings";
 import { getQdrantClient } from "../qdrant-client";
 import { QdrantSemanticCache } from "../semantic-cache";
 import {
@@ -18,15 +18,12 @@ const RAG_CONTEXT_LIMIT = Number.parseInt(
 export class QdrantMistralRAGProvider implements AIProvider {
   private qdrantClient = getQdrantClient();
   private generator: AIProvider;
-  private mistralApiKey: string;
   private collectionName: string;
   private semanticCache: QdrantSemanticCache;
 
   constructor() {
-    this.collectionName =
-      process.env.QDRANT_COLLECTION?.trim() || "portfolio_vectors";
+    this.collectionName = getVectorCollectionName();
     const geminiApiKey = process.env.GEMINI_API_KEY || "";
-    this.mistralApiKey = process.env.MISTRAL_API_KEY || "";
 
     const generatorType = (process.env.RAG_GENERATOR || "gemini")
       .trim()
@@ -56,10 +53,7 @@ export class QdrantMistralRAGProvider implements AIProvider {
 
       if (!lastUserMessage) throw new Error("No user message found");
 
-      const queryEmbedding = await getMistralEmbedding(
-        lastUserMessage,
-        this.mistralApiKey
-      );
+      const queryEmbedding = await getEmbedding(lastUserMessage, "query");
 
       const useCache = shouldUseSemanticCache(lastUserMessage);
 
@@ -142,6 +136,7 @@ ${context}
 
 ### 👤 ZOHAIB'S CORE IDENTITY (fallback only if context lacks the answer):
 - **Role**: MERN Stack + AI Engineer (LLM integrations, RAG pipelines, agentic AI with MCP)
+- **Education**: BS Computer Software Engineering, Minhaj University Lahore (2021–2025), CGPA 3.66/4.00
 - **Location**: Lahore, Pakistan 🇵🇰
 - **Email**: mzohaib0677@gmail.com
 

@@ -5,6 +5,7 @@ import {
   getQdrantClient,
   QDRANT_VECTOR_SIZE,
 } from "./qdrant-client";
+import { getCacheCollectionName } from "./embeddings";
 
 export interface SemanticCacheHit {
   response: string;
@@ -18,9 +19,7 @@ export interface SemanticCacheLookupResult {
 }
 
 function cacheCollectionName(): string {
-  return (
-    process.env.QDRANT_CACHE_COLLECTION?.trim() || "portfolio_semantic_cache"
-  );
+  return getCacheCollectionName();
 }
 
 function cacheEnabled(): boolean {

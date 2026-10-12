@@ -1,7 +1,8 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
+import { getEmbeddingDims } from "./embeddings";
 
-/** Mistral `mistral-embed` vector size */
-export const QDRANT_VECTOR_SIZE = 1024;
+/** Vector size of the active embedding provider (Gemini 768, Mistral 1024) */
+export const QDRANT_VECTOR_SIZE = getEmbeddingDims();
 
 let cachedClient: QdrantClient | null = null;
 

@@ -1,17 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 import { QdrantClient } from '@qdrant/js-client-rest';
-import dotenv from 'dotenv';
 import crypto from 'crypto';
-
-dotenv.config();
+import { getEmbedding, EMBEDDING_DIMS, EMBEDDING_PROVIDER, VECTOR_COLLECTION } from './embeddings.mjs';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const QDRANT_URL = process.env.QDRANT_URL;
 const QDRANT_API_KEY = process.env.QDRANT_API_KEY;
-const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 
-const COLLECTION_NAME = (process.env.QDRANT_COLLECTION || 'portfolio_vectors').trim();
+const COLLECTION_NAME = VECTOR_COLLECTION;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const qdrant = new QdrantClient({
@@ -21,36 +18,6 @@ const qdrant = new QdrantClient({
 });
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-async function getEmbedding(text) {
-    // Mistral Free Tier rate limits are quite strict, add a small delay
-    await sleep(200);
-
-    const response = await fetch('https://api.mistral.ai/v1/embeddings', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${MISTRAL_API_KEY}`,
-        },
-        body: JSON.stringify({
-            model: 'mistral-embed',
-            input: text,
-        }),
-    });
-
-    if (!response.ok) {
-        if (response.status === 429) {
-            console.warn('Rate limit hit, sleeping for 2 seconds...');
-            await sleep(2000);
-            return getEmbedding(text); // Simple retry once
-        }
-        const error = await response.text();
-        throw new Error(`Mistral API error: ${error}`);
-    }
-
-    const data = await response.json();
-    return data.data[0].embedding;
-}
 
 
 function rowToText(row, tableName) {
@@ -75,7 +42,7 @@ function generateUUID(str) {
 }
 
 async function main() {
-    console.log('Starting sync to Qdrant...');
+    console.log(`Starting sync to Qdrant (${EMBEDDING_PROVIDER}, ${EMBEDDING_DIMS} dims) → ${COLLECTION_NAME}`);
 
     // 1. Ensure collection exists
     const collections = await qdrant.getCollections();
@@ -85,11 +52,18 @@ async function main() {
         console.log(`Creating collection: ${COLLECTION_NAME}`);
         await qdrant.createCollection(COLLECTION_NAME, {
             vectors: {
-                size: 1024, // Mistral embedding size
+                size: EMBEDDING_DIMS,
                 distance: 'Cosine',
             },
         });
     }
+
+    // Needed to filter by table when pruning stale points (no-op if it already exists)
+    await qdrant.createPayloadIndex(COLLECTION_NAME, {
+        field_name: '_table',
+        field_schema: 'keyword',
+        wait: true,
+    });
 
     const tables = [
         'personal_data',
@@ -118,7 +92,8 @@ async function main() {
             console.log(`  Generating embedding for: ${text.substring(0, 100)}...`);
 
             try {
-                const embedding = await getEmbedding(text);
+                await sleep(200);
+                const embedding = await getEmbedding(text, 'document');
 
                 // Use existing ID if it's a UUID, otherwise generate one
                 let pointId = row.id;
@@ -146,6 +121,18 @@ async function main() {
                 wait: true,
                 points: points,
             });
+        }
+
+        // Remove points for rows that no longer exist in Supabase (skip if any row failed to embed)
+        if (points.length === rows.length) {
+            await qdrant.delete(COLLECTION_NAME, {
+                wait: true,
+                filter: {
+                    must: [{ key: '_table', match: { value: table } }],
+                    must_not: [{ has_id: points.map((p) => p.id) }],
+                },
+            });
+            console.log(`  Pruned stale ${table} points`);
         }
     }
 
