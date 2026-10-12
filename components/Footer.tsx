@@ -15,6 +15,7 @@ interface PersonalData {
 
 const quickLinks = [
   { name: "About", href: "#about" },
+  { name: "AI", href: "#ai" },
   { name: "Skills", href: "#skills" },
   { name: "Experience", href: "#experience" },
   { name: "Certificates", href: "#certifications" },
@@ -59,8 +60,8 @@ export default function Footer() {
           <div>
             <h3 className="mb-4 text-xl font-bold gradient-text-static">{name}</h3>
             <p className="max-w-xs text-sm leading-relaxed text-text-secondary">
-              Full Stack MERN developer shipping scalable apps with Next.js, NestJS, and
-              cloud-ready deployments.
+              MERN Stack + AI Engineer building LLM integrations, RAG pipelines, and
+              agentic workflows on scalable Next.js and NestJS backends.
             </p>
           </div>
 

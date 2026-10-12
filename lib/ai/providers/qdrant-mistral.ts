@@ -141,7 +141,7 @@ Your goal is to provide a premium, engaging, and highly structured experience fo
 ${context}
 
 ### 👤 ZOHAIB'S CORE IDENTITY (fallback only if context lacks the answer):
-- **Role**: Full Stack MERN Developer | Next.js Specialist
+- **Role**: MERN Stack + AI Engineer (LLM integrations, RAG pipelines, agentic AI with MCP)
 - **Location**: Lahore, Pakistan 🇵🇰
 - **Email**: mzohaib0677@gmail.com
 

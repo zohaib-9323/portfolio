@@ -1,11 +1,12 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Code, Database, Cloud, Wrench } from "lucide-react";
+import { Code, Database, Cloud, Wrench, Brain, Plug } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { SectionShell, SectionHeading, SectionLoader } from "@/components/ui/Section";
 import { cn } from "@/lib/utils";
+import { SKILL_CATEGORIES } from "@/lib/resume-data";
 
 interface Skill {
   name: string;
@@ -25,6 +26,12 @@ const categoryConfig: Record<
   string,
   { title: string; icon: typeof Code; color: string; description: string }
 > = {
+  ai: {
+    title: "AI Engineering",
+    icon: Brain,
+    color: "from-fuchsia-500 to-violet-500",
+    description: "LLM integrations, RAG, and agentic workflows that run in production",
+  },
   frontend: {
     title: "Frontend",
     icon: Code,
@@ -49,7 +56,38 @@ const categoryConfig: Record<
     color: "from-amber-500 to-orange-500",
     description: "CI/CD, cloud deploys, and developer tooling",
   },
+  integrations: {
+    title: "Integrations & AI Tools",
+    icon: Plug,
+    color: "from-sky-500 to-indigo-500",
+    description: "Billing, accounting, and the AI tools I ship with daily",
+  },
 };
+
+const CATEGORY_ORDER = ["ai", "backend", "frontend", "database", "devops", "integrations"];
+
+function buildCategories(grouped: Record<string, Skill[]>): Category[] {
+  return Object.keys(grouped)
+    .map((catId) => {
+      const config = categoryConfig[catId] || {
+        title: catId.charAt(0).toUpperCase() + catId.slice(1),
+        icon: Code,
+        color: "from-slate-500 to-zinc-500",
+        description: "Technical skills and proficiencies",
+      };
+      return { id: catId, ...config, skills: grouped[catId] };
+    })
+    .sort((a, b) => {
+      const ai = CATEGORY_ORDER.indexOf(a.id);
+      const bi = CATEGORY_ORDER.indexOf(b.id);
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+}
+
+/** Resume snapshot used when Supabase is unavailable or empty */
+const FALLBACK_GROUPED: Record<string, Skill[]> = Object.fromEntries(
+  SKILL_CATEGORIES.map((c) => [c.id, c.skills.map((name) => ({ name, level: 0 }))])
+);
 
 export default function Skills() {
   const [skillCategories, setSkillCategories] = useState<Category[]>([]);
@@ -72,26 +110,19 @@ export default function Skills() {
             return acc;
           }, {});
 
-          const categories: Category[] = Object.keys(grouped)
-            .map((catId) => {
-              const config = categoryConfig[catId] || {
-                title: catId.charAt(0).toUpperCase() + catId.slice(1),
-                icon: Code,
-                color: "from-slate-500 to-zinc-500",
-                description: "Technical skills and proficiencies",
-              };
-              return { id: catId, ...config, skills: grouped[catId] };
-            })
-            .sort((a, b) => {
-              const order = ["frontend", "backend", "database", "devops"];
-              return order.indexOf(a.id) - order.indexOf(b.id);
-            });
+          const categories =
+            Object.keys(grouped).length > 0
+              ? buildCategories(grouped)
+              : buildCategories(FALLBACK_GROUPED);
 
           setSkillCategories(categories);
           if (categories.length > 0) setActiveTab(categories[0].id);
         }
       } catch (error) {
         console.error("Error fetching skills:", error);
+        const categories = buildCategories(FALLBACK_GROUPED);
+        setSkillCategories(categories);
+        setActiveTab(categories[0].id);
       } finally {
         setLoading(false);
       }
@@ -115,7 +146,7 @@ export default function Skills() {
       <SectionHeading
         eyebrow="Expertise"
         title="Skills & Technologies"
-        description="The stack I use to ship fast, secure, and maintainable products."
+        description="From LLMs and RAG to the MERN stack underneath — the tools I use to ship AI products that hold up in production."
       />
 
       <div className="mb-10 flex flex-wrap justify-center gap-2">
@@ -175,32 +206,19 @@ export default function Skills() {
                 </div>
               </div>
 
-              <div className="grid gap-6 sm:grid-cols-2">
+              <ul className="flex flex-wrap gap-3">
                 {activeCategory.skills.map((skill, index) => (
-                  <motion.div
+                  <motion.li
                     key={skill.name}
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.04 }}
-                    className="space-y-2.5"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                    className="rounded-xl border border-border-muted bg-card-bg/70 px-4 py-2.5 text-sm font-medium text-text-primary transition-colors hover:border-accent/40 hover:text-accent"
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium text-text-primary">{skill.name}</span>
-                      <span className="font-mono text-caption text-text-muted">
-                        {skill.level}%
-                      </span>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-bg-tertiary">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${skill.level}%` }}
-                        transition={{ duration: 0.9, delay: index * 0.06, ease: "easeOut" }}
-                        className={cn("h-full rounded-full bg-gradient-to-r", activeCategory.color)}
-                      />
-                    </div>
-                  </motion.div>
+                    {skill.name}
+                  </motion.li>
                 ))}
-              </div>
+              </ul>
             </div>
           </motion.div>
         )}

@@ -1,5 +1,5 @@
 const DEFAULT_TAGLINE =
-  "Full Stack developer shipping scalable MERN & Next.js apps with clean architecture.";
+  "MERN Stack + AI Engineer building LLM integrations, RAG pipelines, and agentic workflows.";
 
 /** One-line hook for the hero — never dump the full Supabase bio there. */
 export function heroTagline(bio?: string | null): string {
@@ -15,9 +15,16 @@ export function heroTagline(bio?: string | null): string {
 export function bioParagraphs(bio?: string | null): string[] {
   if (!bio?.trim()) {
     return [
-      "Results-driven Full Stack Developer with experience building scalable web applications using the MERN stack, Next.js, and modern cloud tooling.",
+      "MERN Stack + AI Engineer with nearly 3 years of experience building full-stack applications and production AI features.",
     ];
   }
+  // Respect explicit paragraph breaks before whitespace is collapsed
+  const explicit = bio
+    .split(/\n\s*\n/)
+    .map((p) => p.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+  if (explicit.length > 1) return explicit;
+
   const normalized = bio.replace(/\s+/g, " ").trim();
   const byDouble = normalized.split(/\s{2,}|\n+/).filter(Boolean);
   if (byDouble.length > 1) return byDouble;
@@ -34,10 +41,14 @@ export function bioParagraphs(bio?: string | null): string[] {
 
 /** Pull short highlight chips from bio keywords (fallback set). */
 export function bioHighlights(bio?: string | null): string[] {
-  const defaults = ["MERN Stack", "Next.js", "TypeScript", "NestJS", "AWS / Docker"];
+  const defaults = ["LLM Integration", "RAG Pipelines", "Agentic AI & MCP", "MERN Stack", "NestJS", "Next.js"];
   if (!bio) return defaults;
 
   const keywords = [
+    "LLM",
+    "RAG",
+    "Agentic",
+    "MCP",
     "MERN",
     "Next.js",
     "TypeScript",
@@ -48,9 +59,8 @@ export function bioHighlights(bio?: string | null): string[] {
     "Supabase",
     "AWS",
     "Docker",
-    "REST API",
-    "UI/UX",
+    "BullMQ",
   ];
   const found = keywords.filter((k) => bio.toLowerCase().includes(k.toLowerCase()));
-  return found.length >= 3 ? found.slice(0, 6) : defaults;
+  return found.length >= 3 ? found.slice(0, 8) : defaults;
 }

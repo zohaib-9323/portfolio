@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { SectionShell, SectionHeading, SectionLoader } from "@/components/ui/Section";
-import { bioParagraphs, bioHighlights } from "@/lib/bio";
+import { bioParagraphs } from "@/lib/bio";
+import { PROFILE } from "@/lib/resume-data";
 
 export default function About() {
   const [bio, setBio] = useState<string | null>(null);
@@ -40,8 +41,8 @@ export default function About() {
     );
   }
 
-  const paragraphs = bioParagraphs(bio);
-  const highlights = bioHighlights(bio);
+  const paragraphs = bio?.trim() ? bioParagraphs(bio) : PROFILE.bio;
+  const highlights = PROFILE.focus;
 
   return (
     <SectionShell id="about-detail" variant="elevated">
@@ -49,8 +50,7 @@ export default function About() {
         eyebrow="About me"
         title="What I do"
         description={
-          role ||
-          "Building production-ready full stack applications with a focus on performance and clarity."
+          role || PROFILE.role
         }
       />
 

@@ -14,41 +14,34 @@ import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/Badge";
 import { SectionLoader } from "@/components/ui/Section";
 import { Typewriter } from "@/components/ui/Typewriter";
-import { heroTagline } from "@/lib/bio";
+import { PROFILE, HERO_STATS } from "@/lib/resume-data";
 
 interface PersonalData {
   display_name: string;
   role: string;
-  bio: string;
   email: string;
   phone: string;
-  social_links: {
-    github?: string;
-    linkedin?: string;
-  };
-  metadata: {
-    location?: string;
-    availability?: string;
-  };
+  social_links: { github?: string; linkedin?: string };
+  metadata: { location?: string; availability?: string };
 }
 
 const rotatingLines = [
-  "Scalable AI-driven web apps",
-  "MERN & Next.js production systems",
-  "Performance-first architecture",
-  "Secure, cloud-ready delivery",
+  "LLM integrations with Claude, OpenRouter & Vertex AI",
+  "RAG pipelines: chunking, embeddings, semantic search",
+  "Agentic AI workflows with MCP & sub-agents",
+  "Multi-tenant MERN & NestJS SaaS backends",
 ];
 
 const quickStats = [
-  { value: "2+", label: "Years experience" },
-  { value: "10+", label: "Projects shipped" },
-  { value: "4", label: "Core stacks" },
+  { value: HERO_STATS.years, label: "Years experience" },
+  { value: HERO_STATS.aiProducts, label: "AI products shipped" },
+  { value: "35%", label: "Faster APIs" },
 ];
 
 export default function Hero() {
   const [lineIndex, setLineIndex] = useState(0);
   const [headlineDone, setHeadlineDone] = useState(false);
-  const [data, setData] = useState<PersonalData | null>(null);
+  const [remote, setRemote] = useState<PersonalData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,7 +52,7 @@ export default function Hero() {
           .select("*")
           .single();
         if (error) throw error;
-        if (data) setData(data);
+        if (data) setRemote(data);
       } catch (error) {
         console.error("Error fetching personal data:", error);
       } finally {
@@ -69,6 +62,19 @@ export default function Hero() {
     fetchPersonalData();
   }, []);
 
+  // Supabase first, resume snapshot as fallback
+  const data = {
+    display_name: remote?.display_name || PROFILE.displayName,
+    role: remote?.role || PROFILE.role,
+    email: remote?.email || PROFILE.email,
+    phone: remote?.phone || PROFILE.phone,
+    social_links: { github: remote?.social_links?.github || PROFILE.github },
+    metadata: {
+      location: remote?.metadata?.location || PROFILE.location,
+      availability: remote?.metadata?.availability || PROFILE.availability,
+    },
+  };
+
   useEffect(() => {
     if (!headlineDone) return;
     const interval = setInterval(() => {
@@ -77,17 +83,14 @@ export default function Hero() {
     return () => clearInterval(interval);
   }, [headlineDone]);
 
-  const firstName = useMemo(
-    () => (data?.display_name || "Zohaib Asghar").split(" ")[0],
-    [data?.display_name]
-  );
+  const firstName = useMemo(() => data.display_name.split(" ")[0], [data.display_name]);
 
   const headlineSegments = useMemo(
     () => [
       { text: "Hi, I'm ", className: "text-text-primary" },
       { text: firstName, className: "gradient-text-static" },
-      { text: "\nI craft ", className: "text-text-primary" },
-      { text: "digital products", className: "text-highlight" },
+      { text: "\nI build ", className: "text-text-primary" },
+      { text: "AI-powered products", className: "text-highlight" },
       { text: " that scale.", className: "text-text-primary" },
     ],
     [firstName]
@@ -104,7 +107,7 @@ export default function Hero() {
     );
   }
 
-  const availability = data?.metadata?.availability || "Open to opportunities";
+  const availability = data.metadata.availability;
 
   return (
     <section
@@ -131,7 +134,7 @@ export default function Hero() {
               <span className="eyebrow-dot animate-pulse" />
               {availability}
             </Badge>
-            <Badge>{data?.metadata?.location || "Lahore, Pakistan"}</Badge>
+            <Badge>{data.metadata.location || "Lahore, Pakistan"}</Badge>
           </motion.div>
 
           <h1 className="min-h-[2.2em] text-center text-balance font-bold text-display-xl md:min-h-[2.6em]">
@@ -153,7 +156,7 @@ export default function Hero() {
                   transition={{ duration: 0.45 }}
                   className="mx-auto mt-6 max-w-xl text-center text-heading-sm font-medium text-text-secondary"
                 >
-                  {data?.role || "Full Stack MERN Developer"}
+                  {data.role}
                 </motion.p>
 
                 <div className="relative mx-auto mt-4 flex h-10 max-w-lg items-center justify-center overflow-hidden">
@@ -177,7 +180,7 @@ export default function Hero() {
                   transition={{ duration: 0.45, delay: 0.08 }}
                   className="mx-auto mt-6 max-w-lg text-center text-body text-text-muted"
                 >
-                  {heroTagline(data?.bio)}
+                  {PROFILE.tagline}
                 </motion.p>
 
                 <motion.p
@@ -212,7 +215,7 @@ export default function Hero() {
                   </motion.a>
                   <motion.a
                     href={
-                      data?.social_links?.github || "https://github.com/zohaib-9323"
+                      data.social_links.github || "https://github.com/zohaib-9323"
                     }
                     target="_blank"
                     rel="noopener noreferrer"
@@ -287,7 +290,7 @@ export default function Hero() {
                     className="bento-cell col-span-2 flex items-center justify-center p-4 md:col-span-2"
                   >
                     <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-text-muted md:text-sm">
-                      MERN · Next.js · TypeScript · NestJS
+                      {HERO_STATS.stackLine}
                     </p>
                   </motion.div>
                 </motion.div>
@@ -298,7 +301,7 @@ export default function Hero() {
                   transition={{ delay: 0.3 }}
                   className="mt-10 flex flex-wrap items-center justify-center gap-6 text-caption text-text-muted"
                 >
-                  {data?.metadata?.location && (
+                  {data.metadata.location && (
                     <a
                       href={`https://maps.google.com/?q=${data.metadata.location}`}
                       target="_blank"
@@ -309,7 +312,7 @@ export default function Hero() {
                       {data.metadata.location}
                     </a>
                   )}
-                  {data?.email && (
+                  {data.email && (
                     <a
                       href={`mailto:${data.email}`}
                       className="inline-flex items-center gap-2 transition-colors hover:text-accent"
@@ -318,7 +321,7 @@ export default function Hero() {
                       {data.email}
                     </a>
                   )}
-                  {data?.phone && (
+                  {data.phone && (
                     <a
                       href={`tel:${data.phone}`}
                       className="inline-flex items-center gap-2 transition-colors hover:text-accent"

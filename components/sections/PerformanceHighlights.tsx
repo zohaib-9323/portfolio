@@ -8,28 +8,32 @@ import { cn } from "@/lib/utils";
 
 const stats = [
   {
-    label: "Performance boost",
-    value: 25,
+    label: "Faster API responses (Redis caching)",
+    value: 35,
+    suffix: "%",
     icon: Zap,
     color: "from-amber-400 to-orange-500",
   },
   {
-    label: "User satisfaction",
-    value: 40,
+    label: "Faster deployments (CI/CD)",
+    value: 50,
+    suffix: "%",
+    icon: Rocket,
+    color: "from-violet-400 to-fuchsia-500",
+  },
+  {
+    label: "JWT-secured REST endpoints",
+    value: 30,
+    suffix: "+",
     icon: Users,
     color: "from-emerald-400 to-teal-500",
   },
   {
-    label: "API efficiency",
-    value: 30,
+    label: "Days to ship a full RAG system",
+    value: 7,
+    suffix: "",
     icon: TrendingUp,
     color: "from-cyan-400 to-blue-500",
-  },
-  {
-    label: "Faster deployment",
-    value: 50,
-    icon: Rocket,
-    color: "from-violet-400 to-fuchsia-500",
   },
 ];
 
@@ -55,7 +59,7 @@ export default function PerformanceHighlights() {
         }
         setCountedValues((prev) => {
           const next = [...prev];
-          next[index] = Math.floor(current);
+          next[index] = Math.round(current);
           return next;
         });
       }, interval);
@@ -67,7 +71,7 @@ export default function PerformanceHighlights() {
       <SectionHeading
         eyebrow="Impact"
         title="Performance Highlights"
-        description="Measurable outcomes from optimization, architecture, and best practices."
+        description="Measured results from production work: performance, delivery, security, and AI."
       />
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -96,7 +100,8 @@ export default function PerformanceHighlights() {
                   <Icon className="h-8 w-8 text-white" />
                 </motion.div>
                 <p className="mb-2 text-4xl font-bold gradient-text-static md:text-5xl">
-                  {countedValues[index]}%
+                  {countedValues[index]}
+                  {stat.suffix}
                 </p>
                 <p className="text-sm font-medium text-text-secondary">{stat.label}</p>
                 <div

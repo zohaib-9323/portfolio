@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Code2, Zap, Shield, Layers } from "lucide-react";
+import { Code2, Zap, Shield, Brain } from "lucide-react";
 import { SectionShell, SectionHeading } from "@/components/ui/Section";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +10,7 @@ const principles = [
     icon: Code2,
     title: "Clean Architecture",
     description:
-      "Maintainable, scalable code with clear separation of concerns and modular design.",
+      "Maintainable, scalable systems with clear separation of concerns, SOLID principles, and modular design.",
     color: "from-blue-500 to-cyan-500",
   },
   {
@@ -28,10 +28,10 @@ const principles = [
     color: "from-emerald-500 to-teal-500",
   },
   {
-    icon: Layers,
-    title: "Scalability",
+    icon: Brain,
+    title: "AI-Native, Production-Ready",
     description:
-      "Systems that grow with demand — cloud-native patterns and solid APIs.",
+      "AI where it adds real value — grounded with RAG, validated with structured outputs, and wrapped in queues, timeouts, and fallbacks so it holds up in production.",
     color: "from-violet-500 to-fuchsia-500",
   },
 ];

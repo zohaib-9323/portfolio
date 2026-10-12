@@ -20,15 +20,37 @@ export interface ProjectShowcase {
 /** Shown if Supabase returns no rows or the query fails */
 export const FALLBACK_PROJECTS: ProjectShowcase[] = [
   {
+    title: "Trade Harmonizer",
+    description:
+      "Multi-tenant trade compliance SaaS with a RAG knowledge base built in one week: document chunking, embeddings, and semantic search feeding the LLM. Admin tools cover guidance prompts, knowledge testing, publishing, and version history. Google Vertex AI requests are queued through BullMQ + Redis. Includes JWT/RBAC tenant isolation and a third-party pen test that found only low-severity issues.",
+    liveLink: "https://dev.tradeharmonizer.co.uk",
+    landingLink: null,
+    githubLink: null,
+    tech: ["NestJS", "MongoDB", "RAG", "Google Vertex AI", "BullMQ", "Redis", "JWT/RBAC", "Stripe", "QuickBooks/Xero", "Trivy"],
+    featured: true,
+    image: PROJECT_PREVIEW_FILES.tradeHarmonizer,
+  },
+  {
     title: "Capture AI",
     description:
-      "AI-based front-end product work: Stripe integrations, REST APIs, and Storybook for a scalable, documented UI workflow.",
-    liveLink: null,
+      "AI-powered chatbot management SaaS for automation, customer engagement, and lead management. I built the backend modules for analytics, chatbot configuration, the AI knowledge base, engagement workflows, and Stripe subscriptions. Slow or failed LLM calls are handled on the server so they don't break the rest of the workflow.",
+    liveLink: "https://app.cptr.ai",
     landingLink: null,
-    githubLink: "https://github.com/zohaib-9323",
-    tech: ["Next.js", "React", "TypeScript", "Stripe", "Storybook", "Tailwind CSS"],
+    githubLink: null,
+    tech: ["NestJS", "Node.js", "LLM APIs", "Stripe", "TypeScript"],
     featured: true,
     image: PROJECT_PREVIEW_FILES.captureAiDashboard,
+  },
+  {
+    title: "Requirement Analyst",
+    description:
+      "AI requirements analysis tool that finds missing, vague, or risky requirements, such as edge cases and business-logic gaps. It uses OpenRouter chat completions to return validated structured JSON across 5 analysis categories and exports reports to Markdown.",
+    liveLink: null,
+    landingLink: null,
+    githubLink: "https://github.com/zohaib-9323/Requirment-Analyst",
+    tech: ["Node.js", "Express.js", "OpenRouter", "Structured JSON Outputs", "Prompt Engineering"],
+    featured: true,
+    image: null,
   },
   {
     title: "Recordo Dashboard",
@@ -84,16 +106,5 @@ export const FALLBACK_PROJECTS: ProjectShowcase[] = [
     tech: ["NestJS", "Node.js", "TypeScript", "REST APIs", "MongoDB"],
     featured: false,
     image: PROJECT_PREVIEW_FILES.pps,
-  },
-  {
-    title: "Trade Harmonizer",
-    description:
-      "Trade Harmony platform: secure login and workflows for trade-related operations and harmonized data views.",
-    liveLink: "https://dev.tradeharmonizer.co.uk/login",
-    landingLink: null,
-    githubLink: null,
-    tech: ["Next.js", "TypeScript", "REST APIs"],
-    featured: false,
-    image: PROJECT_PREVIEW_FILES.tradeHarmonizer,
   },
 ];

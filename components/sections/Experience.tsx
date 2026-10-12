@@ -13,6 +13,7 @@ import {
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { SectionShell, SectionHeading, SectionLoader } from "@/components/ui/Section";
+import { EXPERIENCE } from "@/lib/resume-data";
 
 interface Achievement {
   text: string;
@@ -28,6 +29,23 @@ interface Experience {
 }
 
 const defaultIcons = [Zap, TrendingUp, Users, Rocket, CheckCircle2];
+
+function toAchievements(items: string[]): Achievement[] {
+  return items.map((ach, idx) => {
+    const metricMatch = ach.match(/(\d+%)/);
+    const metric = metricMatch ? metricMatch[1] : null;
+    const text = metric ? ach.replace(metric, "").replace(/\s{2,}/g, " ").trim() : ach;
+    return { text, metric, icon: defaultIcons[idx % defaultIcons.length] };
+  });
+}
+
+/** Resume snapshot used when Supabase is unavailable or empty */
+const FALLBACK_EXPERIENCE: Experience[] = EXPERIENCE.map((exp) => ({
+  title: exp.role,
+  company: exp.company,
+  period: exp.period,
+  achievements: toAchievements(exp.achievements),
+}));
 
 export default function Experience() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -63,16 +81,7 @@ export default function Experience() {
                   })
                 : "2024";
 
-            const achievements = (exp.achievements || []).map((ach: string, idx: number) => {
-              const metricMatch = ach.match(/(\d+%)/);
-              const metric = metricMatch ? metricMatch[1] : null;
-              const text = metric ? ach.replace(metric, "").trim() : ach;
-              return {
-                text,
-                metric,
-                icon: defaultIcons[idx % defaultIcons.length],
-              };
-            });
+            const achievements = toAchievements(exp.achievements || []);
 
             return {
               title: exp.role,
@@ -81,10 +90,11 @@ export default function Experience() {
               achievements,
             };
           });
-          setExperiences(mapped);
+          setExperiences(mapped.length > 0 ? mapped : FALLBACK_EXPERIENCE);
         }
       } catch (error) {
         console.error("Error fetching experience:", error);
+        setExperiences(FALLBACK_EXPERIENCE);
       } finally {
         setLoading(false);
       }
@@ -105,7 +115,7 @@ export default function Experience() {
       <SectionHeading
         eyebrow="Career"
         title="Professional Experience"
-        description="Delivering measurable impact through clean architecture and performance."
+        description="Shipping production AI features on top of secure, fast, multi-tenant backends."
       />
 
       <div className="relative mx-auto max-w-5xl">
