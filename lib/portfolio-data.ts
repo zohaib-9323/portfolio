@@ -127,7 +127,9 @@ function normalizeTech(meta: unknown, techStack: unknown): string[] {
 function mapProjectRow(p: Record<string, unknown>): Project {
   const title = String(p.title ?? "Untitled");
   const isLandingPage = title.toLowerCase().includes("landing page");
-  const link = (p.project_link as string | null) ?? null;
+  // Live URLs for projects whose Supabase row may not have one yet
+  const knownLive = FALLBACK_PROJECTS.find((f) => projectDedupeKey(f.title) === projectDedupeKey(title))?.liveLink ?? null;
+  const link = (p.project_link as string | null) || (isLandingPage ? null : knownLive);
   const liveLink = isLandingPage ? null : link;
   const landingLink = isLandingPage ? link : null;
 

@@ -78,12 +78,12 @@ export const FALLBACK_PROJECTS: ProjectShowcase[] = [
     title: "Requirement Analyst",
     description:
       "AI requirements analysis tool that finds missing, vague, or risky requirements, such as edge cases and business-logic gaps. It uses OpenRouter chat completions to return validated structured JSON across 5 analysis categories and exports reports to Markdown.",
-    liveLink: null,
+    liveLink: "https://requirment-analyst.vercel.app/",
     landingLink: null,
     githubLink: "https://github.com/zohaib-9323/Requirment-Analyst",
     tech: ["Node.js", "Express.js", "OpenRouter", "Structured JSON Outputs", "Prompt Engineering"],
     featured: true,
-    image: null,
+    image: PROJECT_PREVIEW_FILES.requirementAnalyst,
   },
   {
     title: "Recordo Dashboard",
