@@ -12,6 +12,7 @@ export const PROJECT_PREVIEW_FILES = {
   goldiumCrafter: "/assets/projects/goldium-crafter.jpg",
   pps: "/assets/projects/PPS.jpg",
   tradeHarmonizer: "/assets/projects/trade-harmonizer.jpg",
+  requirementAnalyst: "/assets/projects/requirement-analyst.jpg",
 } as const;
 
 const IMAGE_EXT = /\.(png|jpe?g|webp|gif|svg|avif|bmp|ico)(\?|#|$)/i;
@@ -117,6 +118,7 @@ export function getStaticProjectPreviewPath(title: string): string | null {
   if (/recipe/.test(t)) return PROJECT_PREVIEW_FILES.recipeGenerator;
   if (/pps|police professional/.test(t)) return PROJECT_PREVIEW_FILES.pps;
   if (/trade/.test(t) && /harmon/.test(t)) return PROJECT_PREVIEW_FILES.tradeHarmonizer;
+  if (/requi?re?ment/.test(t) && /analyst/.test(t)) return PROJECT_PREVIEW_FILES.requirementAnalyst;
   return null;
 }
 

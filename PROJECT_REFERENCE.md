@@ -152,7 +152,7 @@ Uses `fetch` to `https://openrouter.ai/api/v1/chat/completions` with optional `H
 
 ## 7. Styling and theme
 
-- **Design tokens** live in `app/globals.css` as CSS variables; **Tailwind** maps them under names like `bg-primary`, `text-primary`, `accent` (`tailwind.config.ts`).
+- **Design tokens** live in `app/globals.css` as CSS variables (cream / ink / orange, 60-30-10); **Tailwind** maps them as `paper`, `ink`, `muted`, `line`, `accent` (`tailwind.config.ts`).
 - **`darkMode: 'class'`** — theme class toggled on `<html>` via `ThemeProvider`.
 - Full token list, accessibility notes, and DO/DON’T patterns: **`THEME_SYSTEM.md`**.
 

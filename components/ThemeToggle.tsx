@@ -1,89 +1,33 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Moon, Sun } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 
+/** A small switch: the knob slides to the dark / light side. Half-filled disc instead of sun / moon. */
 export default function ThemeToggle() {
-    const { theme, toggleTheme } = useTheme();
-    const isDark = theme === "dark";
+  const { theme, toggleTheme } = useTheme();
+  const dark = theme === "dark";
 
-    return (
-        <motion.button
-            onClick={toggleTheme}
-            className="relative p-2.5 rounded-xl overflow-hidden group focus-outline"
-            style={{
-                background: "var(--card-bg)",
-                border: "1px solid var(--border-muted)",
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-            title={`Switch to ${isDark ? "light" : "dark"} mode`}
-        >
-            {/* Background gradient on hover */}
-            <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                style={{
-                    background: "var(--gradient-subtle)",
-                }}
-            />
-
-            {/* Icon container with morph animation */}
-            <div className="relative w-5 h-5">
-                {/* Sun Icon - Light Mode */}
-                <motion.div
-                    initial={false}
-                    animate={{
-                        scale: isDark ? 0 : 1,
-                        rotate: isDark ? 90 : 0,
-                        opacity: isDark ? 0 : 1,
-                    }}
-                    transition={{
-                        duration: 0.3,
-                        ease: [0.23, 1, 0.32, 1],
-                    }}
-                    className="absolute inset-0 flex items-center justify-center"
-                >
-                    <Sun
-                        className="w-5 h-5 text-amber-500"
-                        strokeWidth={2.5}
-                    />
-                </motion.div>
-
-                {/* Moon Icon - Dark Mode */}
-                <motion.div
-                    initial={false}
-                    animate={{
-                        scale: isDark ? 1 : 0,
-                        rotate: isDark ? 0 : -90,
-                        opacity: isDark ? 1 : 0,
-                    }}
-                    transition={{
-                        duration: 0.3,
-                        ease: [0.23, 1, 0.32, 1],
-                    }}
-                    className="absolute inset-0 flex items-center justify-center"
-                >
-                    <Moon
-                        className="w-5 h-5"
-                        style={{ color: "var(--amber)" }}
-                        strokeWidth={2.5}
-                    />
-                </motion.div>
-            </div>
-
-            {/* Glow effect */}
-            <motion.div
-                className="absolute inset-0 rounded-xl"
-                style={{
-                    background: "var(--accent-glow)",
-                    filter: "blur(12px)",
-                }}
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 0.3 }}
-                transition={{ duration: 0.3 }}
-            />
-        </motion.button>
-    );
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={dark}
+      onClick={toggleTheme}
+      aria-label="Dark theme"
+      title={`Switch to ${dark ? "light" : "dark"} theme`}
+      className="relative h-8 w-[3.25rem] flex-none rounded-full border-[1.5px] border-ink bg-paper shadow-[inset_0_2px_3px_rgb(0_0_0/0.15)]"
+    >
+      <span
+        aria-hidden
+        className={`absolute top-[3px] grid h-[22px] w-[22px] place-items-center rounded-full bg-ink text-paper shadow-[0_2px_0_rgb(0_0_0/0.25)] transition-transform duration-300 ease-out ${
+          dark ? "translate-x-[23px]" : "translate-x-[3px]"
+        }`}
+      >
+        <svg viewBox="0 0 20 20" className={`h-3 w-3 transition-transform duration-500 ${dark ? "rotate-180" : ""}`}>
+          <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
+          <path d="M10 3a7 7 0 0 1 0 14z" fill="currentColor" />
+        </svg>
+      </span>
+    </button>
+  );
 }

@@ -24,7 +24,7 @@ export const FEATURED_CERTIFICATIONS: Certification[] = [
     completedOn: "May 8, 2026",
     hours: 14,
     summary:
-      "Verified 14-hour advanced certification in AI-augmented development with Claude Code — MCP integrations, sub-agents, hooks, plugins, and CLI workflows for faster MERN & Next.js delivery.",
+      "Verified 14-hour advanced certification in AI-augmented development with Claude Code: MCP integrations, sub-agents, hooks, plugins, and CLI workflows for faster MERN & Next.js delivery.",
     highlights: [
       "AI-augmented development workflows with Claude Code",
       "MCP integrations connecting models to tools and APIs",
@@ -37,7 +37,7 @@ export const FEATURED_CERTIFICATIONS: Certification[] = [
     credentialUrl: null,
     imageSrc: "/assets/certificates/claude-code-mastery.png",
     imageAlt:
-      "Certificate of Achievement — Claude Code Mastery for DevExcel 2026 Cohort, awarded to Zohaib Asghar",
+      "Certificate of Achievement, Claude Code Mastery for DevExcel 2026 Cohort, awarded to Zohaib Asghar",
     sortOrder: 0,
   },
 ];

@@ -1,256 +1,152 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
-import { Mail, Send, Github, Phone, MapPin, CheckCircle2, AlertCircle } from "lucide-react";
-import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
-import { supabase } from "@/lib/supabase";
-import { SectionShell, SectionHeading, SectionLoader } from "@/components/ui/Section";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Reveal } from "@/components/ui/Reveal";
+import { usePersonal } from "@/lib/portfolio-data";
 
-interface PersonalData {
-  email: string;
-  phone: string;
-  social_links: { github?: string };
-  metadata: { location?: string };
+type Status = "idle" | "sending" | "sent" | "error";
+
+function formatPhone(phone: string) {
+  // +923229911442 -> +92 322 9911442
+  const m = phone.replace(/\s+/g, "").match(/^\+92(\d{3})(\d{7})$/);
+  return m ? `+92 ${m[1]} ${m[2]}` : phone;
 }
 
 export default function Contact() {
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [data, setData] = useState<PersonalData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const me = usePersonal();
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [status, setStatus] = useState<Status>("idle");
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchPersonalData() {
-      try {
-        const { data, error } = await supabase.from("personal_data").select("*").single();
-        if (error) throw error;
-        if (data) setData(data);
-      } catch (error) {
-        console.error("Error fetching contact data:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchPersonalData();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitStatus("idle");
-    setErrorMessage("");
-
+    setStatus("sending");
+    setError("");
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(form),
       });
-      const result = await res.json();
-
-      if (!res.ok) {
-        throw new Error(result.error || "Failed to send message.");
-      }
-
-      setSubmitStatus("success");
-      setFormData({ name: "", email: "", message: "" });
-      setTimeout(() => setSubmitStatus("idle"), 5000);
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(result.error || "The message couldn't be sent.");
+      setStatus("sent");
+      setForm({ name: "", email: "", message: "" });
     } catch (err) {
-      setSubmitStatus("error");
-      setErrorMessage(
-        err instanceof Error ? err.message : "Something went wrong. Please try again."
-      );
-    } finally {
-      setIsSubmitting(false);
+      setStatus("error");
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     }
-  };
-
-  if (loading) {
-    return (
-      <SectionShell id="contact">
-        <SectionLoader />
-      </SectionShell>
-    );
   }
 
-  const contactItems = [
-    {
-      icon: Mail,
-      label: "Email",
-      value: data?.email || "mzohaib0677@gmail.com",
-      href: `mailto:${data?.email || "mzohaib0677@gmail.com"}`,
-      iconClass: "bg-accent/15 text-accent",
-    },
-    {
-      icon: Phone,
-      label: "Phone",
-      value: data?.phone || "+92 3229911442",
-      href: `tel:${data?.phone || "+923229911442"}`,
-      iconClass: "bg-accent/15 text-accent",
-    },
-    {
-      icon: MapPin,
-      label: "Location",
-      value: data?.metadata?.location || "Lahore, Pakistan",
-      href: `https://maps.google.com/?q=${data?.metadata?.location || "Lahore,Pakistan"}`,
-      iconClass: "bg-accent/15 text-accent",
-    },
-    {
-      icon: Github,
-      label: "GitHub",
-      value:
-        data?.social_links?.github?.replace("https://", "") || "github.com/zohaib-9323",
-      href: data?.social_links?.github || "https://github.com/zohaib-9323",
-      iconClass: "bg-accent/15 text-accent",
-    },
-  ];
+  const update =
+    (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const details = [
+    { k: "Phone", v: formatPhone(me.phone), href: `tel:${me.phone.replace(/\s+/g, "")}` },
+    { k: "GitHub", v: me.github.replace(/^https?:\/\//, ""), href: me.github, external: true },
+    me.linkedin && { k: "LinkedIn", v: me.linkedin.replace(/^https?:\/\/(www\.)?/, ""), href: me.linkedin, external: true },
+    { k: "Based in", v: me.location },
+  ].filter(Boolean) as { k: string; v: string; href?: string; external?: boolean }[];
 
   return (
-    <SectionShell id="contact">
-      <SectionHeading
-        eyebrow="Connect"
-        title="Get In Touch"
-        description="Have a project in mind or want to collaborate? I'd love to hear from you."
-      />
+    <section id="contact" aria-labelledby="contact-title" className="py-20 md:py-32">
+      <div className="wrap">
+        <p className="label flex items-center gap-2.5">
+          <span className="tick" aria-hidden />
+          <span className="text-ink">05</span>
+          <span className="text-line-strong">/</span>
+          Contact
+        </p>
 
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="shimmer-border glass-strong rounded-3xl p-8 md:p-10"
-        >
-          <h3 className="mb-8 text-heading-md font-bold text-text-primary">
-            Send a message
-          </h3>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <Input
-              label="Name"
-              id="name"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Your name"
-            />
-            <Input
-              label="Email"
-              id="email"
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="you@company.com"
-            />
-            <Textarea
-              label="Message"
-              id="message"
-              required
-              rows={5}
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              placeholder="Tell me about your project..."
-            />
-            <motion.button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn-primary flex w-full items-center justify-center gap-2"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+        <Reveal>
+          <h2 id="contact-title" className="display mt-8 max-w-[13ch] text-mega">
+            Got something worth building?
+          </h2>
+        </Reveal>
+
+        <div className="mt-14 grid gap-14 md:mt-20 lg:grid-cols-12 lg:gap-10">
+          <Reveal className="lg:col-span-5">
+            <p className="max-w-[40ch] text-lead text-ink-soft">
+              Hiring for an AI or full-stack role, or need a backend that holds up under real users? Email
+              is quickest. I usually reply within a day.
+            </p>
+            <a
+              href={`mailto:${me.email}`}
+              className="group mt-8 inline-flex max-w-full items-center gap-3 break-all text-[clamp(1.25rem,2.4vw,1.8rem)] font-semibold tracking-[-0.02em] text-ink"
             >
-              {isSubmitting ? (
-                "Sending..."
-              ) : (
-                <>
-                  <Send className="h-5 w-5" />
-                  Send message
-                </>
-              )}
-            </motion.button>
-            {submitStatus === "success" && (
-              <motion.p
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-600 dark:text-emerald-400"
-              >
-                <CheckCircle2 className="h-5 w-5 shrink-0" />
-                Thanks! Your message was sent — I&apos;ll get back to you soon.
-              </motion.p>
-            )}
-            {submitStatus === "error" && (
-              <motion.p
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400"
-              >
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
-                {errorMessage}
-              </motion.p>
-            )}
-          </form>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="glass-strong rounded-3xl p-8 md:p-10"
-        >
-          <h3 className="mb-8 text-heading-md font-bold text-text-primary">
-            Contact details
-          </h3>
-          <div className="space-y-4">
-            {contactItems.map((item, index) => {
-              const Icon = item.icon;
-              const content = (
-                <>
-                  <div
-                    className={cn(
-                      "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl",
-                      item.iconClass
+              <span className="underline decoration-line-strong decoration-[1.5px] underline-offset-[0.25em] transition-colors group-hover:decoration-accent">
+                {me.email}
+              </span>
+              <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
+            </a>
+            <dl className="mt-10 border-t border-line">
+              {details.map((d) => (
+                <div key={d.k} className="grid grid-cols-[6.5rem_1fr] items-baseline border-b border-line py-3.5 text-[0.95rem]">
+                  <dt className="label">{d.k}</dt>
+                  <dd className="min-w-0 truncate text-ink">
+                    {d.href ? (
+                      <a href={d.href} {...(d.external ? { target: "_blank", rel: "noreferrer" } : {})} className="link">
+                        {d.v}
+                      </a>
+                    ) : (
+                      d.v
                     )}
-                  >
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="text-caption text-text-muted">{item.label}</p>
-                    <p className="font-semibold text-text-primary transition-colors hover:text-accent">
-                      {item.value}
-                    </p>
-                  </div>
-                </>
-              );
-              const motionProps = {
-                initial: { opacity: 0, x: 16 },
-                whileInView: { opacity: 1, x: 0 },
-                viewport: { once: true } as const,
-                transition: { delay: index * 0.08 },
-                className: "card-interactive flex items-center gap-4 rounded-2xl p-5",
-                whileHover: { x: 4 },
-              };
-              return item.href ? (
-                <motion.a
-                  key={item.label}
-                  href={item.href}
-                  target={item.href.startsWith("http") ? "_blank" : undefined}
-                  rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                  {...motionProps}
-                >
-                  {content}
-                </motion.a>
-              ) : (
-                <motion.div key={item.label} {...motionProps}>
-                  {content}
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
+
+          <Reveal delay={0.08} className="lg:col-span-6 lg:col-start-7">
+            <form onSubmit={submit} className="rounded-[26px] border border-line bg-paper-raised p-5 sm:p-8">
+              <p className="display text-[1.4rem]">Or leave a note</p>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="label mb-2 block">Name</span>
+                  <input required name="name" autoComplete="name" placeholder="Ada Lovelace" value={form.name} onChange={update("name")} className="field" />
+                </label>
+                <label className="block">
+                  <span className="label mb-2 block">Email</span>
+                  <input
+                    required
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    placeholder="you@company.com"
+                    value={form.email}
+                    onChange={update("email")}
+                    className="field"
+                  />
+                </label>
+              </div>
+              <label className="mt-4 block">
+                <span className="label mb-2 block">Message</span>
+                <textarea
+                  required
+                  name="message"
+                  rows={5}
+                  placeholder="What are you working on?"
+                  value={form.message}
+                  onChange={update("message")}
+                  className="field resize-none"
+                />
+              </label>
+
+              <div className="mt-8 flex flex-wrap-reverse items-center justify-between gap-5">
+                <p className="text-[0.92rem]" role="status" aria-live="polite">
+                  {status === "sent" && <span className="text-ink">Sent. I&apos;ll get back to you soon.</span>}
+                  {status === "error" && <span className="text-ink">{error}</span>}
+                </p>
+                <button type="submit" disabled={status === "sending"} className="btn-press">
+                  {status === "sending" ? "Sending…" : "Send message"}
+                  <span aria-hidden>→</span>
+                </button>
+              </div>
+            </form>
+          </Reveal>
+        </div>
       </div>
-    </SectionShell>
+    </section>
   );
 }

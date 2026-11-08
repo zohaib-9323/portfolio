@@ -122,6 +122,8 @@ export class QdrantMistralRAGProvider implements AIProvider {
       const hasRagContext = ragContextIsSubstantial(context, topRagScore);
 
       const systemPrompt = `You are Zohaib Asghar's highly professional AI Portfolio Assistant. 
+Write in plain, natural sentences. Never use em dashes (—); use commas, colons or full stops instead.
+
 Your goal is to provide a premium, engaging, and highly structured experience for visitors.
 
 ### 📜 GUIDELINES:
