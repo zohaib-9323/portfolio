@@ -5,11 +5,11 @@ begin;
 -- Profile
 update public.personal_data set
   role = 'MERN Stack + AI Engineer',
-  bio = 'MERN Stack + AI Engineer with nearly 3 years of experience building full-stack applications with MongoDB, Express.js, React, Node.js, NestJS, and Next.js — and a focus on AI engineering for the last year.
+  bio = 'MERN Stack + AI Engineer with nearly 3 years of experience building full-stack applications with MongoDB, Express.js, React, Node.js, NestJS, and Next.js. For the last year my focus has been AI engineering.
 
 I build AI features that run in production: a RAG knowledge base (chunking, embeddings, semantic search) with admin tools for guidance prompts, knowledge testing, publishing, and version history; a chatbot SaaS backend that stays up when model calls are slow or fail; and a Google Vertex AI request queue built on BullMQ and Redis.
 
-I integrate LLMs through the Claude API, OpenRouter, and Vertex AI with structured JSON outputs, and I work AI-natively every day with Claude Code, Cursor, and Codex — including MCP integrations and sub-agent workflows.
+I integrate LLMs through the Claude API, OpenRouter, and Vertex AI with structured JSON outputs, and I work AI-natively every day with Claude Code, Cursor, and Codex, including MCP integrations and sub-agent workflows.
 
 Underneath the AI is solid engineering: multi-tenant SaaS security (30+ JWT-secured and 25+ RBAC-protected endpoints), Redis caching that cut API response times by ~35%, and CI/CD with GitHub Actions, Docker, and AWS that made deployments ~50% faster.',
   metadata = coalesce(metadata, '{}'::jsonb) || jsonb_build_object('location', 'Lahore, Punjab, Pakistan', 'availability', 'Open to AI & full-stack roles'),
@@ -23,13 +23,13 @@ update public.work_history set
   start_date = '2024-09-01',
   end_date = null,
   currently_working = true,
-  achievements = array['Integrated third-party LLM APIs and Stripe billing — the server handles timeouts and failed model calls so slow AI responses never leave users waiting.', 'Built a complete RAG system for Trade Harmonizer in one week: document chunking, embeddings, and semantic search feeding the LLM, plus a BullMQ + Redis queue for Google Vertex AI requests.', 'Wrote 30+ JWT-secured and 25+ RBAC-protected REST endpoints used by the frontend team.', 'Added Redis caching to slow MongoDB/Mongoose endpoints, cutting average response time by 35%.', 'Set up CI/CD with GitHub Actions, Docker, and AWS — deployments are now 50% faster.', 'Build React, Next.js, and TypeScript frontends with React Hooks, reusable components, and Redux Toolkit.']::text[],
+  achievements = array['Integrated third-party LLM APIs and Stripe billing. The server handles timeouts and failed model calls, so slow AI responses never leave users waiting.', 'Built a complete RAG system for Trade Harmonizer in one week: document chunking, embeddings, and semantic search feeding the LLM, plus a BullMQ + Redis queue for Google Vertex AI requests.', 'Wrote 30+ JWT-secured and 25+ RBAC-protected REST endpoints used by the frontend team.', 'Added Redis caching to slow MongoDB/Mongoose endpoints, cutting average response time by 35%.', 'Set up CI/CD with GitHub Actions, Docker, and AWS, which made deployments 50% faster.', 'Build React, Next.js, and TypeScript frontends with React Hooks, reusable components, and Redux Toolkit.']::text[],
   updated_at = now()
 where company_name ilike '%devexcel%';
 
 delete from public.work_history where company_name ilike '%AOT Solutions%';
 insert into public.work_history (company_name, role, location, start_date, end_date, currently_working, achievements)
-values ('AOT Solutions (Pvt) Ltd', 'Associate Software Engineer', 'Lahore, Pakistan', '2024-01-01', '2024-08-31', false, array['Built web applications with React, Next.js, Node.js, Express.js, and MongoDB — UI screens, REST APIs, and the wiring between them.', 'Fixed bugs and technical issues in existing codebases and worked with the team to deliver each project.']::text[]);
+values ('AOT Solutions (Pvt) Ltd', 'Associate Software Engineer', 'Lahore, Pakistan', '2024-01-01', '2024-08-31', false, array['Built web applications with React, Next.js, Node.js, Express.js, and MongoDB: UI screens, REST APIs, and the wiring between them.', 'Fixed bugs and technical issues in existing codebases and worked with the team to deliver each project.']::text[]);
 
 -- Skills (update in place: projects.tech_stack and join tables reference skill ids)
 delete from public.skills where name in ('Supabase', 'Framer Motion', 'Axios', 'GraphQL', 'Socket.io', 'PostgreSQL', 'Vercel', 'Postman');

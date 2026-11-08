@@ -130,7 +130,7 @@ export const FALLBACK_PROJECTS: ProjectShowcase[] = [
     image: PROJECT_PREVIEW_FILES.recipeGenerator,
   },
   {
-    title: "PPS — Police Professional Services",
+    title: "PPS (Police Professional Services)",
     description:
       "Backend systems delivered with NestJS: generalized APIs consumed by mobile and web clients, deployed for production use.",
     liveLink: "https://develop.dizsrd2khzh34.amplifyapp.com/",
