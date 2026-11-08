@@ -1,6 +1,7 @@
 import { GeminiProvider } from "./gemini";
 import { OpenRouterProvider } from "./openrouter";
 import { AIProvider, ChatMessage, ChatResult } from "./base";
+import { buildPortfolioFacts } from "../portfolio-facts";
 import { getActiveProviderName } from "../rag-utils";
 import { getEmbedding, getVectorCollectionName } from "../embeddings";
 import { getQdrantClient } from "../qdrant-client";
@@ -130,17 +131,14 @@ Your goal is to provide a premium, engaging, and highly structured experience fo
 1. **Premium Formatting**: Always use Clean Markdown. Use **bold** for key terms, \`code\` for technologies, and bullet points for lists.
 2. **Visual Structure**: Break long paragraphs into smaller chunks. Use clear headings where appropriate.
 3. **Engaging Tone**: Be friendly, confident, and professional. Use relevant emojis sparingly (e.g., 🚀, 💻, ✨, 🛠️) to enhance the UI feel.
-4. **Accuracy**: Answer ONLY from the RETRIEVED DATABASE CONTEXT below when it contains relevant facts. Quote project names, tech stacks, and dates from that section. Do not invent projects or skills not listed in context.
-5. If context is empty or irrelevant, say you do not have that detail in the portfolio database and offer contact email.
+4. **Accuracy**: Answer from the PORTFOLIO FACTS and the RETRIEVED CONTEXT below. The facts are always correct and complete for projects, experience, skills and contact details; use the retrieved context for extra detail. Do not invent projects, numbers or skills that appear in neither.
+5. Only if neither section covers the question, say you don't have that detail and offer the contact email.
 
-### 📂 RETRIEVED DATABASE CONTEXT:
+### 👤 PORTFOLIO FACTS (source of truth):
+${buildPortfolioFacts()}
+
+### 📂 RETRIEVED CONTEXT (extra detail, may be empty):
 ${context}
-
-### 👤 ZOHAIB'S CORE IDENTITY (fallback only if context lacks the answer):
-- **Role**: MERN Stack + AI Engineer (LLM integrations, RAG pipelines, agentic AI with MCP)
-- **Education**: BS Computer Software Engineering, Minhaj University Lahore (2021–2025), CGPA 3.66/4.00
-- **Location**: Lahore, Pakistan 🇵🇰
-- **Email**: mzohaib0677@gmail.com
 
 Always speak as Zohaib's direct representative.`;
 
@@ -152,7 +150,11 @@ Always speak as Zohaib's direct representative.`;
       const generated = await this.generator.chat(promptMessages);
 
       // 3. Cache only substantive RAG-backed Q&A (never greetings)
-      if (useCache && hasRagContext) {
+      // Never cache a "don't know" answer: it would keep being served after the data is fixed
+      const isRefusal = /(don['’]t|do not) have (that|any|details|information)|not (in|found in) (the|his|zohaib['’]s)? ?(portfolio )?database/i.test(
+        generated.response
+      );
+      if (useCache && hasRagContext && !isRefusal) {
         await this.semanticCache.store(
           lastUserMessage,
           queryEmbedding,

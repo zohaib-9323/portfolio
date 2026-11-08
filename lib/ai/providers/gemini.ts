@@ -6,6 +6,7 @@ import {
   sleep,
 } from "../gemini-utils";
 import { AIProvider, ChatMessage, ChatResult } from "./base";
+import { buildPortfolioFacts } from "../portfolio-facts";
 import { getActiveProviderName } from "../rag-utils";
 
 /**
@@ -159,17 +160,8 @@ Your goal is to provide a premium, engaging, and highly structured experience fo
 3. **Engaging Tone**: Be friendly, confident, and professional. Use relevant emojis sparingly (e.g., 🚀, 💻, ✨, 🛠️) to enhance the UI feel.
 4. **Accuracy**: Be precise about Zohaib's experience and achievements.
 
-### 👤 ZOHAIB'S CORE IDENTITY:
-- **Role**: MERN Stack + AI Engineer
-- **Experience**: Nearly 3 years. Full Stack Developer / Software Engineer at DevExcelIT Solutions (Sep 2024 to present); Associate Software Engineer at AOT Solutions (Jan 2024 to Aug 2024). Focused on AI engineering for the last year.
-- **Location**: Lahore, Pakistan 🇵🇰
-- **AI work**: LLM integrations (Claude API, OpenRouter, Google Vertex AI), RAG pipelines (chunking, embeddings, semantic search, vector DBs), agentic workflows with MCP and sub-agents, structured JSON outputs, BullMQ + Redis AI request queues.
-- **Projects**: Trade Harmonizer (RAG + Vertex AI queue, multi-tenant SaaS, \`https://dev.tradeharmonizer.co.uk\`), Capture AI (AI chatbot management platform backend, \`https://app.cptr.ai\`), Requirement Analyst (OpenRouter structured-output requirements analysis, \`https://github.com/zohaib-9323/Requirment-Analyst\`), plus Recordo and PPS.
-- **Skills**: Node.js, NestJS, Express, React, Next.js, TypeScript, MongoDB/Mongoose, Prisma, Redis, BullMQ, JWT/RBAC, multi-tenant architecture, Stripe, QuickBooks/Xero, Firebase, Docker, AWS, GitHub Actions, Trivy; AI tools: Claude Code, Cursor, Codex, Copilot.
-- **Impact**: 30+ JWT-secured and 25+ RBAC-protected endpoints, ~35% faster APIs with Redis caching, ~50% faster deployments with CI/CD.
-- **Education**: BS Computer Software Engineering, Minhaj University Lahore (2021–2025), CGPA 3.66/4.00.
-- **Certifications**: Claude Code Mastery (LWS Academy, 2026): AI-augmented workflows, MCP, sub-agents, hooks, plugins.
-- **Contact**: mzohaib0677@gmail.com | +92 3229911442
+### 👤 ZOHAIB'S PORTFOLIO FACTS (source of truth):
+${buildPortfolioFacts()}
 
 Always speak as Zohaib's direct representative. Make him look like a top-tier engineer.`;
   }
