@@ -55,7 +55,14 @@ export default function Header() {
     >
       <div className="wrap relative flex h-[4.5rem] items-center justify-between">
         <a href="#top" onClick={() => setOpen(false)} className="flex items-center gap-3 text-ink" aria-label="Zohaib Asghar, back to top">
-          <span className="display grid h-9 w-9 place-items-center rounded-[9px] bg-ink text-[0.82rem] !text-paper">ZA</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/profile/avatar.jpg"
+            alt=""
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-full object-cover ring-[1.5px] ring-ink ring-offset-2 ring-offset-paper"
+          />
           <span className="hidden text-[0.95rem] font-semibold tracking-[-0.01em] sm:inline">Zohaib Asghar</span>
         </a>
 
