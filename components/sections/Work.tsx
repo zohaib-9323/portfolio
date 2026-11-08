@@ -105,7 +105,7 @@ function CaseStudy({ project, index }: { project: Project; index: number }) {
         <p className="label flex items-center gap-3">
           <span className="display text-[0.95rem] !tracking-normal text-ink">{String(index + 1).padStart(2, "0")}</span>
           <span className="h-px w-8 bg-line-strong" aria-hidden />
-          {project.liveLink ? "In production" : project.githubLink ? "Open source" : "Client work"}
+          {project.status ?? (project.liveLink ? "In production" : project.githubLink ? "Open source" : "Client work")}
         </p>
         <h3 className="display mt-5 text-title-sm">{project.title}</h3>
         <p className="mt-5 text-[1.02rem] leading-relaxed text-ink-soft">{project.description}</p>

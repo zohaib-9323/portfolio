@@ -10,7 +10,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PROFILE, EXPERIENCE, SKILL_CATEGORIES } from "@/lib/resume-data";
-import { FALLBACK_PROJECTS, type ProjectShowcase } from "@/lib/projects-data";
+import { FALLBACK_PROJECTS, PINNED_PROJECTS, type ProjectShowcase } from "@/lib/projects-data";
 import { FEATURED_CERTIFICATIONS, type Certification } from "@/lib/certifications-data";
 import { projectDedupeKey, shouldReplaceProjectRow } from "@/lib/project-preview-images";
 import {
@@ -171,7 +171,14 @@ export function useProjects(): Project[] {
     )
       .then(({ data, error }) => {
         if (!alive || error || !data?.length) return;
-        setProjects(dedupeProjects(data.map((r) => mapProjectRow(r as Record<string, unknown>))));
+        const rows = dedupeProjects(data.map((r) => mapProjectRow(r as Record<string, unknown>)));
+        // Pinned projects come first unless Supabase already has a row for them
+        const have = new Set(rows.map((r) => projectDedupeKey(r.title)));
+        const pinned = PINNED_PROJECTS.filter((p) => !have.has(projectDedupeKey(p.title))).map((p) => ({
+          ...p,
+          image: resolveShowcasePreviewImage(p),
+        }));
+        setProjects([...pinned, ...rows].sort((a, b) => Number(b.featured) - Number(a.featured)));
       })
       .catch(() => undefined);
     return () => {
