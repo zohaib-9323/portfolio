@@ -1,37 +1,35 @@
 import Header from "@/components/Header";
 import Hero from "@/components/sections/Hero";
-import About from "@/components/sections/About";
-import AIEngineering from "@/components/sections/AIEngineering";
-import Skills from "@/components/sections/Skills";
+import Work from "@/components/sections/Work";
+import Engineering from "@/components/sections/Engineering";
 import Experience from "@/components/sections/Experience";
-import Certificates from "@/components/sections/Certificates";
-import Projects from "@/components/sections/Projects";
-import PerformanceHighlights from "@/components/sections/PerformanceHighlights";
-import TechPhilosophy from "@/components/sections/TechPhilosophy";
+import Toolkit from "@/components/sections/Toolkit";
 import Contact from "@/components/sections/Contact";
 import Footer from "@/components/Footer";
 import ChatbotLoader from "@/components/ChatbotLoader";
 
+/*
+  60 / 30 / 10: cream page (Hero, AI, Experience, Toolkit), ink bands (Work, Contact + footer),
+  orange only on markers and primary buttons. `.band` flips the palette, so in dark mode
+  the same bands turn cream on an ink page.
+*/
 export default function Home() {
   return (
-    <main className="site-canvas relative min-h-screen">
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden>
-        <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-accent/6 blur-[120px]" />
-        <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-accent/4 blur-[100px]" />
-      </div>
+    <>
       <Header />
-      <Hero />
-      <About />
-      <AIEngineering />
-      <Skills />
-      <Experience />
-      <Certificates />
-      <Projects />
-      <PerformanceHighlights />
-      <TechPhilosophy />
-      <Contact />
-      <Footer />
+      <main>
+        <Hero />
+        <div className="h-20 md:h-28" aria-hidden />
+        <Work />
+        <Engineering />
+        <Experience />
+        <Toolkit />
+      </main>
+      <div className="band mx-2 mb-2 rounded-[28px] sm:mx-3 sm:mb-3 md:mx-4 md:mb-4 md:rounded-[44px]">
+        <Contact />
+        <Footer />
+      </div>
       <ChatbotLoader />
-    </main>
+    </>
   );
 }

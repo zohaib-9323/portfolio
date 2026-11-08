@@ -1,195 +1,123 @@
 "use client";
 
-import { motion } from "framer-motion";
-import {
-  Briefcase,
-  Calendar,
-  TrendingUp,
-  Zap,
-  Users,
-  Rocket,
-  CheckCircle2,
-} from "lucide-react";
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { SectionShell, SectionHeading, SectionLoader } from "@/components/ui/Section";
-import { EXPERIENCE } from "@/lib/resume-data";
+import { Section, SectionHead } from "@/components/ui/Section";
+import { Reveal } from "@/components/ui/Reveal";
+import { Tilt } from "@/components/ui/Tilt";
+import { useCertifications, useExperience } from "@/lib/portfolio-data";
+import { EDUCATION } from "@/lib/resume-data";
 
-interface Achievement {
-  text: string;
-  metric: string | null;
-  icon: typeof Zap;
+/** Set the numbers in a sentence (35%, 30+, 25+) in ink and semibold so results scan first. */
+function withFigures(text: string) {
+  return text.split(/(\d+(?:\.\d+)?(?:%|\+)?)/g).map((part, i) =>
+    i % 2 === 1 ? (
+      <span key={i} className="font-semibold text-ink">
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
 }
 
-interface Experience {
-  title: string;
-  company: string;
-  period: string;
-  achievements: Achievement[];
+function Row({ when, kind, children }: { when: string; kind: string; children: React.ReactNode }) {
+  return (
+    <Reveal className="grid gap-5 border-b border-line py-10 md:grid-cols-12 md:gap-8 md:py-14">
+      <div className="md:col-span-3">
+        <p className="display text-[1.05rem] !tracking-[-0.01em]">{when}</p>
+        <p className="label mt-1.5">{kind}</p>
+      </div>
+      <div className="md:col-span-9">{children}</div>
+    </Reveal>
+  );
 }
-
-const defaultIcons = [Zap, TrendingUp, Users, Rocket, CheckCircle2];
-
-function toAchievements(items: string[]): Achievement[] {
-  return items.map((ach, idx) => {
-    const metricMatch = ach.match(/(\d+%)/);
-    const metric = metricMatch ? metricMatch[1] : null;
-    const text = metric ? ach.replace(metric, "").replace(/\s{2,}/g, " ").trim() : ach;
-    return { text, metric, icon: defaultIcons[idx % defaultIcons.length] };
-  });
-}
-
-/** Resume snapshot used when Supabase is unavailable or empty */
-const FALLBACK_EXPERIENCE: Experience[] = EXPERIENCE.map((exp) => ({
-  title: exp.role,
-  company: exp.company,
-  period: exp.period,
-  achievements: toAchievements(exp.achievements),
-}));
 
 export default function Experience() {
-  const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchExperience() {
-      try {
-        const { data, error } = await supabase
-          .from("work_history")
-          .select("*")
-          .order("start_date", { ascending: false });
-        if (error) throw error;
-        if (data) {
-          const mapped = data.map((exp: {
-            role: string;
-            company_name: string;
-            start_date: string;
-            end_date?: string;
-            currently_working?: boolean;
-            achievements?: string[];
-          }) => {
-            const start = new Date(exp.start_date).toLocaleDateString("en-US", {
-              month: "short",
-              year: "numeric",
-            });
-            const end = exp.currently_working
-              ? "Present"
-              : exp.end_date
-                ? new Date(exp.end_date).toLocaleDateString("en-US", {
-                    month: "short",
-                    year: "numeric",
-                  })
-                : "2024";
-
-            const achievements = toAchievements(exp.achievements || []);
-
-            return {
-              title: exp.role,
-              company: exp.company_name,
-              period: `${start} – ${end}`,
-              achievements,
-            };
-          });
-          setExperiences(mapped.length > 0 ? mapped : FALLBACK_EXPERIENCE);
-        }
-      } catch (error) {
-        console.error("Error fetching experience:", error);
-        setExperiences(FALLBACK_EXPERIENCE);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchExperience();
-  }, []);
-
-  if (loading) {
-    return (
-      <SectionShell id="experience">
-        <SectionLoader />
-      </SectionShell>
-    );
-  }
+  const jobs = useExperience();
+  const certs = useCertifications();
 
   return (
-    <SectionShell id="experience">
-      <SectionHeading
-        eyebrow="Career"
-        title="Professional Experience"
-        description="Shipping production AI features on top of secure, fast, multi-tenant backends."
+    <Section id="experience">
+      <SectionHead
+        id="experience"
+        index="03"
+        label="Experience"
+        title="Where I've worked,"
+        quiet="and what changed because I was there."
       />
 
-      <div className="relative mx-auto max-w-5xl">
-        <div className="absolute left-6 top-0 bottom-0 hidden w-px md:block">
-          <div className="h-full w-full bg-gradient-to-b from-accent via-violet-500 to-fuchsia-500 opacity-40" />
-        </div>
+      <div className="mt-12 border-t-[1.5px] border-ink md:mt-20">
+        {jobs.map((job, i) => (
+          <Row key={job.company + job.period} when={job.period} kind={job.location ?? "Role"}>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+              <h3 className="display text-title-sm">{job.role}</h3>
+              {i === 0 && /present/i.test(job.period) && (
+                <span className="label flex items-center gap-2 text-ink">
+                  <span className="tick" aria-hidden />
+                  Current
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-[1.05rem] font-medium text-ink-soft">{job.company}</p>
+            <ul className="mt-7 grid gap-x-10 gap-y-4 lg:grid-cols-2">
+              {job.points.map((point) => (
+                <li key={point} className="relative pl-5 text-[0.98rem] leading-relaxed text-ink-soft">
+                  <span className="absolute left-0 top-[0.62em] h-[1.5px] w-2.5 bg-line-strong" aria-hidden />
+                  {withFigures(point)}
+                </li>
+              ))}
+            </ul>
+          </Row>
+        ))}
 
-        <div className="space-y-10 md:space-y-14">
-          {experiences.map((exp, index) => (
-            <motion.article
-              key={`${exp.company}-${index}`}
-              initial={{ opacity: 0, x: -24 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative md:pl-20"
-            >
-              <div className="absolute left-3 top-8 hidden h-6 w-6 items-center justify-center rounded-full border-4 border-bg-primary bg-gradient-to-r from-accent to-violet-500 md:flex">
-                <span className="h-2 w-2 rounded-full bg-white" />
+        <Row when={EDUCATION.period} kind="Education">
+          <h3 className="display text-[1.6rem] leading-tight">{EDUCATION.degree}</h3>
+          <p className="mt-2 text-[1.02rem] text-ink-soft">
+            {EDUCATION.school} · CGPA {EDUCATION.cgpa}
+          </p>
+        </Row>
+
+        {certs.map((cert) => (
+          <Row key={cert.id} when={String(cert.completedOn ?? cert.year)} kind="Certification">
+            <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-start md:gap-12">
+              <div>
+                <h3 className="display text-[1.6rem] leading-tight">{cert.title}</h3>
+                <p className="mt-2 text-[1.02rem] text-ink-soft">
+                  {cert.issuer}
+                  {cert.hours ? ` · ${cert.hours} hours` : ""}
+                </p>
+                {cert.summary && <p className="mt-4 max-w-prose text-[0.98rem] leading-relaxed text-ink-soft">{cert.summary}</p>}
+                <p className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-[0.92rem]">
+                  {cert.imageSrc && (
+                    <a href={cert.imageSrc} target="_blank" rel="noreferrer" className="link">
+                      View certificate ↗
+                    </a>
+                  )}
+                  {cert.credentialUrl && (
+                    <a href={cert.credentialUrl} target="_blank" rel="noreferrer" className="link">
+                      Verify ↗
+                    </a>
+                  )}
+                  {cert.credentialId && <span className="label">ID {cert.credentialId}</span>}
+                </p>
               </div>
-
-              <div className="card-interactive glass-strong p-8 md:p-10">
-                <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-accent to-violet-500 shadow-glow">
-                      <Briefcase className="h-7 w-7 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-heading-md font-bold text-text-primary">
-                        {exp.title}
-                      </h3>
-                      <p className="text-lg font-semibold text-accent">{exp.company}</p>
-                    </div>
-                  </div>
-                  <div className="inline-flex items-center gap-2 self-start rounded-xl border border-border-muted bg-bg-secondary/60 px-4 py-2 text-sm font-medium text-text-muted">
-                    <Calendar className="h-4 w-4 text-accent" />
-                    {exp.period}
-                  </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {exp.achievements.map((achievement, idx) => {
-                    const Icon = achievement.icon;
-                    return (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, y: 8 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: idx * 0.06 }}
-                        className="rounded-xl border border-border-muted bg-card-bg/50 p-4 transition-colors hover:border-accent/25"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10">
-                            <Icon className="h-5 w-5 text-accent" />
-                          </div>
-                          <p className="text-sm leading-relaxed text-text-secondary">
-                            {achievement.text}
-                            {achievement.metric && (
-                              <span className="ml-2 font-bold gradient-text-static">
-                                {achievement.metric}
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.article>
-          ))}
-        </div>
+              {cert.imageSrc && (
+                <Tilt max={12} lift={24} radius="10px" className="w-full max-w-[280px]">
+                  <a
+                    href={cert.imageSrc}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Open ${cert.title} certificate`}
+                    className="block rounded-[10px] border border-line bg-paper-raised p-2 shadow-[0_1px_0_rgb(var(--line-strong)),0_2px_0_rgb(var(--line-strong)),0_3px_0_rgb(var(--line-strong)),0_28px_40px_-22px_rgb(0_0_0/0.5)]"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={cert.imageSrc} alt={cert.imageAlt} loading="lazy" className="w-full rounded-[5px]" />
+                  </a>
+                </Tilt>
+              )}
+            </div>
+          </Row>
+        ))}
       </div>
-    </SectionShell>
+    </Section>
   );
 }

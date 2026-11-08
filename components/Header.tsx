@@ -1,236 +1,130 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, useScroll, useSpring, AnimatePresence } from "framer-motion";
-import { Menu, X, ArrowUpRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import ThemeToggle from "./ThemeToggle";
-import { cn } from "@/lib/utils";
-import { supabase } from "@/lib/supabase";
 
-const navItems = [
-  { name: "About", href: "#about" },
-  { name: "AI", href: "#ai" },
-  { name: "Skills", href: "#skills" },
-  { name: "Experience", href: "#experience" },
-  { name: "Certificates", href: "#certifications" },
-  { name: "Projects", href: "#projects" },
-  { name: "Contact", href: "#contact" },
+const NAV = [
+  { href: "#work", label: "Work" },
+  { href: "#ai", label: "AI" },
+  { href: "#experience", label: "Experience" },
+  { href: "#toolkit", label: "Toolkit" },
 ];
 
 export default function Header() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("");
-  const [displayName, setDisplayName] = useState("Zohaib Asghar");
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
-  });
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState("");
 
   useEffect(() => {
-    async function fetchDisplayName() {
-      try {
-        const { data, error } = await supabase
-          .from("personal_data")
-          .select("display_name")
-          .single();
-        if (error) throw error;
-        if (data) setDisplayName(data.display_name);
-      } catch (error) {
-        console.error("Error fetching display name:", error);
-      }
-    }
-    fetchDisplayName();
+    const onScroll = () => setScrolled(window.scrollY > 16);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Highlight the section in the middle of the viewport
+  useEffect(() => {
+    const sections = ["#top", ...NAV.map((n) => n.href), "#contact"]
+      .map((sel) => document.querySelector(sel))
+      .filter(Boolean) as Element[];
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) setActive(e.target.id === "top" ? "" : `#${e.target.id}`);
+      },
+      { rootMargin: "-45% 0px -50% 0px" }
+    );
+    sections.forEach((s) => io.observe(s));
+    return () => io.disconnect();
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 24);
-      const sections = navItems.map((item) => item.href.substring(1));
-      const currentSection = sections.find((section) => {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          return rect.top <= 120 && rect.bottom >= 120;
-        }
-        return false;
-      });
-      setActiveSection(currentSection ? `#${currentSection}` : "");
+    document.body.style.overflow = open ? "hidden" : "";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
     };
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const handleNavClick = (href: string) => {
-    setIsMobileMenuOpen(false);
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
-  const initials = displayName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  }, [open]);
 
   return (
-    <>
-      <motion.div
-        className="fixed top-0 left-0 right-0 z-[60] h-0.5 origin-left"
-        style={{ scaleX, background: "var(--amber)" }}
-      />
+    <header
+      className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-300 ${
+        open ? "border-line bg-paper" : scrolled ? "border-line bg-paper/85 backdrop-blur-md" : "border-transparent"
+      }`}
+    >
+      <div className="wrap relative flex h-[4.5rem] items-center justify-between">
+        <a href="#top" onClick={() => setOpen(false)} className="flex items-center gap-3 text-ink" aria-label="Zohaib Asghar, back to top">
+          <span className="display grid h-9 w-9 place-items-center rounded-[9px] bg-ink text-[0.82rem] !text-paper">ZA</span>
+          <span className="hidden text-[0.95rem] font-semibold tracking-[-0.01em] sm:inline">Zohaib Asghar</span>
+        </a>
 
-      <motion.header
-        initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 px-4 pt-4 md:px-6"
-      >
         <nav
-          className={cn(
-            "section-container mx-auto flex items-center justify-between rounded-md px-4 transition-all duration-300 md:px-6",
-            isScrolled
-              ? "glass-strong h-16"
-              : "h-16 md:h-[4.5rem] bg-transparent"
-          )}
+          aria-label="Primary"
+          className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 rounded-full border border-line p-1 md:flex"
         >
-          <motion.a
-            href="#about"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNavClick("#about");
-            }}
-            className="group flex items-center gap-3"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <span className="surface-amber flex h-10 w-10 items-center justify-center rounded-md border-2 border-border-strong text-sm font-bold shadow-[var(--shadow-soft)]">
-              {initials}
-            </span>
-            <span className="hidden font-bold gradient-text-static sm:inline text-lg">
-              {displayName.split(" ")[0]}
-            </span>
-          </motion.a>
-
-          <div className="hidden items-center gap-1 rounded-md border-2 border-border-muted bg-bg-secondary p-1 md:flex">
-            {navItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick(item.href);
-                }}
-                className={cn(
-                  "relative rounded-full px-4 py-2 text-sm font-medium transition-colors",
-                  activeSection === item.href
-                    ? "text-text-primary"
-                    : "text-text-muted hover:text-text-secondary"
-                )}
-              >
-                {activeSection === item.href && (
-                  <motion.span
-                    layoutId="navPill"
-                    className="surface-amber absolute inset-0 rounded-md border-2 border-border-strong"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-                  />
-                )}
-                <span
-                  className={cn(
-                    "relative z-10",
-                    activeSection === item.href && "font-bold text-black"
-                  )}
-                >
-                  {item.name}
-                </span>
-              </a>
-            ))}
-          </div>
-
-          <div className="hidden items-center gap-3 md:flex">
-            <ThemeToggle />
-            <motion.a
-              href="#contact"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavClick("#contact");
-              }}
-              className="btn-primary inline-flex items-center gap-1.5 !py-2.5 !px-5 text-sm"
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
+          {NAV.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              aria-current={active === item.href ? "true" : undefined}
+              className={`rounded-full px-4 py-1.5 text-[0.9rem] transition-colors ${
+                active === item.href ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
+              }`}
             >
-              Hire me
-              <ArrowUpRight className="h-4 w-4" />
-            </motion.a>
-          </div>
-
-          <div className="flex items-center gap-2 md:hidden">
-            <ThemeToggle />
-            <motion.button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="rounded-xl border border-border-muted bg-card-bg p-2.5 focus-outline"
-              aria-label="Toggle menu"
-              whileTap={{ scale: 0.95 }}
-            >
-              {isMobileMenuOpen ? (
-                <X className="h-6 w-6 text-text-primary" />
-              ) : (
-                <Menu className="h-6 w-6 text-text-primary" />
-              )}
-            </motion.button>
-          </div>
+              {item.label}
+            </a>
+          ))}
         </nav>
 
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -8, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.98 }}
-              transition={{ duration: 0.25 }}
-              className="section-container mx-auto mt-2 overflow-hidden rounded-md border-2 border-border-strong glass-strong md:hidden"
-            >
-              <div className="space-y-1 p-3">
-                {navItems.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavClick(item.href);
-                    }}
-                    className={cn(
-                      "block rounded-xl px-4 py-3 text-sm font-medium transition-colors",
-                      activeSection === item.href
-                        ? "bg-accent/15 text-accent"
-                        : "text-text-muted hover:bg-card-bg hover:text-text-primary"
-                    )}
-                  >
-                    {item.name}
-                  </a>
-                ))}
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <a
+            href="#contact"
+            className="hidden rounded-full bg-ink px-4 py-2 text-[0.9rem] font-medium text-paper transition-transform hover:-translate-y-0.5 md:inline-flex"
+          >
+            Let&apos;s talk
+          </a>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            className="relative h-10 w-10 rounded-full border-[1.5px] border-ink text-ink md:hidden"
+          >
+            <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
+            <span
+              className={`absolute left-1/2 top-1/2 h-[1.5px] w-4 -translate-x-1/2 bg-current transition-transform duration-300 ${
+                open ? "rotate-45" : "-translate-y-[3px]"
+              }`}
+            />
+            <span
+              className={`absolute left-1/2 top-1/2 h-[1.5px] w-4 -translate-x-1/2 bg-current transition-transform duration-300 ${
+                open ? "-rotate-45" : "translate-y-[3px]"
+              }`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {open && (
+        <nav id="mobile-nav" aria-label="Mobile" className="wrap h-[calc(100dvh-4.5rem)] bg-paper pb-10 pt-4 md:hidden">
+          <ul className="border-t-[1.5px] border-ink">
+            {[...NAV, { href: "#contact", label: "Contact" }].map((item, i) => (
+              <li key={item.href} className="border-b border-line">
                 <a
-                  href="#contact"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleNavClick("#contact");
-                  }}
-                  className="btn-primary mt-2 flex w-full items-center justify-center gap-2"
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="display flex items-baseline justify-between py-5 text-[2.4rem] leading-none"
                 >
-                  Hire me
-                  <ArrowUpRight className="h-4 w-4" />
+                  {item.label}
+                  <span className="label">0{i + 1}</span>
                 </a>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
-    </>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+    </header>
   );
 }
